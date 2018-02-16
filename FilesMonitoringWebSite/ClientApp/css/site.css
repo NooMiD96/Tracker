@@ -1,0 +1,79 @@
+/**  
+  *  For logining
+  */
+.modal-content{
+    color: black;
+}
+.modalInputUserName, .modalInputPassword, .modalInputTrackerId, .search-input{
+    display: block;
+    font-weight: normal;
+    padding: 5px;
+    margin: 5px 5px 5px 0px;
+}
+.search-input{
+    margin-right: 15px;
+    margin-left: 15px;
+}
+.modalInputUserName::placeholder, .modalInputPassword::placeholder, .modalInputTrackerId::placeholder{
+    color: #bdbdbd;
+}
+.validateModalInputUserName, .validateModalInputPassword {
+    visibility: hidden;
+    color: rgb(219, 16, 16);
+    font-size: 0.9em;
+}
+
+.NavLinks{
+    display: inline-block !important;
+}
+
+.row {
+    /* margin: 10px 0px 10px 0px; */
+    /* margin-right: 0px; 
+    margin-left: 0px; */
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+
+
+table {
+    border-collapse: collapse;
+    /* width: 100%; */
+    border: #ddd 1px solid;
+}
+
+th, td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+tr {
+    height: 51px;
+}
+.table-header:hover{
+    cursor: default;
+}
+.clickable-tr, .clickable-link{
+    cursor: pointer;
+}
+tr:hover {
+    background-color:#bebebe;
+}
+.default-cursor{
+    cursor: default !important;
+}
+.tracker-table{
+    min-width: 350px;
+}
+
+
+
+
+.right{
+    float: right;
+}
+
+.modal-container{
+    display: inline-block;
+}
