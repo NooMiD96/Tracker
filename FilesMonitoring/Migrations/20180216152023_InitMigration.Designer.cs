@@ -11,8 +11,8 @@ using System;
 namespace FilesMonitoring.Migrations
 {
     [DbContext(typeof(SQLiteDb))]
-    [Migration("20180205124736_AddExceptionTable")]
-    partial class AddExceptionTable
+    [Migration("20180216152023_InitMigration")]
+    partial class InitMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

@@ -1,11 +1,11 @@
 import { fetch, addTask } from 'domain-task';
 import { Action, Reducer, ActionCreator } from 'redux';
 import { AppThunkAction } from './';
-import { functions } from '../func/fetchHelper';
+import { functions } from '../func/RequestHelper';
 // -----------------
 // STATE - This defines the type of data maintained in the Redux store.
 export interface TrackerState {
-    trackerList: Tracker[] | null,
+    trackerList?: Tracker[],
     trackerListCountView: number,
     trackerListPage: number,
     needGetData: boolean,
@@ -25,7 +25,7 @@ interface GetTrackerListAction {
 }
 interface SetTrackerListAction {
     type: 'SET_TRACKER_LIST',
-    trackerList: Tracker[] | null,
+    trackerList?: Tracker[],
 }
 interface MovePageTrackerListAction {
     type: 'MOVE_PAGE_TRACKER_LIST_ACTION',
@@ -52,15 +52,16 @@ type KnownAction = GetTrackerListAction | SetTrackerListAction | ResetTrackerLis
 // ACTION CREATORS - These are functions exposed to UI components that will trigger a state transition.
 // They don't directly mutate state, but they can have external side-effects (such as loading data).
 export const actionCreators = {
-    GetTrackerList: (needUsersName: boolean, count?: string | number, page?: string | number): AppThunkAction<GetTrackerListAction | SetTrackerListAction> => (dispatch, getState) => {
-        let params = `?needUsersName=${needUsersName}`;
-        if (count != null && page != null) {
-            params += `&count=${count}&page=${page}`;
-        }
+    GetTrackerList: (count?: number, page?: number): AppThunkAction<GetTrackerListAction | SetTrackerListAction> => (dispatch, getState) => {
+        let params = functions.GetParams(undefined, undefined, undefined, undefined, count, page);
         // Only load data if it's something we don't already have (and are not already loading)
         let fetchTask = functions.fetchTask('GetTrackerList', 'GET', params)
             .then(data => {
-                dispatch({ type: 'SET_TRACKER_LIST', trackerList: data as Tracker[] | null });
+                if(data == null){
+                    dispatch({ type: 'SET_TRACKER_LIST' });
+                }else{
+                    dispatch({ type: 'SET_TRACKER_LIST', trackerList: data as Tracker[] });
+                }
             }).catch(err => {
                 console.log('Error :-S in change list', err);
             });
@@ -87,7 +88,7 @@ export const actionCreators = {
 
 // ----------------
 // REDUCER - For a given state and action, returns the new state. To support time travel, this must not mutate the old state.
-const unloadedState: TrackerState = { trackerList: null, trackerListCountView: 10, trackerListPage: 1, needGetData: false };
+const unloadedState: TrackerState = { trackerListCountView: 10, trackerListPage: 1, needGetData: false };
 
 export const reducer: Reducer<TrackerState> = (state: TrackerState, action: KnownAction) => {
     switch (action.type) {
@@ -147,24 +148,6 @@ export const reducer: Reducer<TrackerState> = (state: TrackerState, action: Know
                 trackerListPage: 1,
                 needGetData: true,
             };
-
-        // case 'CREATE_NEW_USER_ACTION':
-        //     return {
-        //         ...state,
-        //         needGetData: true,
-        //     }
-
-        // case 'DELETE_USER_ACTION':
-        //     return {
-        //         ...state,
-        //         needGetData: true,
-        //     }
-
-        // case 'DELETE_TRACKER_ACTION':
-        //     return {
-        //         ...state,
-        //         needGetData: true,
-        //     }
 
         case 'CHANGE_ACCESS_USER_ACTION':
             return {

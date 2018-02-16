@@ -44,8 +44,8 @@ Obj/
 
 # Visual Studio 2015 cache/options directory
 .vs/
-**/wwwroot/dist/
-**/ClientApp/dist/
+*/wwwroot/dist/
+*/ClientApp/dist/
 
 /yarn.lock
 
@@ -257,3 +257,5 @@ _Pvt_Extensions
 ########################
 npm-shrinkwrap.json
 */package-lock.json
+/FilesMonitoring/temp.db
+/package-lock.json

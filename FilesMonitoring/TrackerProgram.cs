@@ -59,7 +59,7 @@ namespace FilesMonitoring {
         static private string[] _extensions;
         static private string[] _ignores;
 
-        public void Start(string[] args) {
+        public TrackerProgram(string[] args) {
             ParseConfig();
 
             Analizer.ignores = _ignores;
@@ -72,12 +72,8 @@ namespace FilesMonitoring {
 
             SetEventRecordTimer();
 
-            Console.WriteLine("some char");
+            Console.WriteLine("Input text for exit");
             Console.ReadLine();
-        }
-
-        public void Stop() {
-
         }
         private void ParseConfig() {
             var builder = new ConfigurationBuilder()
@@ -193,6 +189,7 @@ namespace FilesMonitoring {
 
             while(true) {
                 ewh.WaitOne();
+                System.Threading.Thread.Sleep(1000);
                 if(_isEventsRecord) {
                     ewh.Reset();
                     continue;

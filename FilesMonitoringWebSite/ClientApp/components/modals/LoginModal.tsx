@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { RouteComponentProps } from 'react-router-dom';
-import NavMenu from './NavMenu';
+import NavMenu from '../NavMenu';
 import * as $ from 'jquery';
 
 interface InputProps {

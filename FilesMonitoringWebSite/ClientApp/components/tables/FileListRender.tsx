@@ -1,15 +1,15 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
-import { ApplicationState }  from '../store';
-import * as File from '../store/File';
-import { UserState } from 'ClientApp/store/User';
-import * as Change from '../store/Change';
-import Paginator from './Paginator';
-import ViewCounter from './ViewCounter';
-import { FormateTime } from '../func/TimeFormater'
-import EditDeleteTimeModalButton from './EditDeleteTimeModalButton';
-import EditDeleteTimeModal from './EditDeleteTimeModal';
+import { ApplicationState }  from '../../store';
+import * as File from '../../store/File';
+import * as Change from '../../store/Change';
+import { UserState } from '../../store/User';
+import Paginator from './components/Paginator';
+import ViewCounter from './components/ViewCounter';
+import { FormateTime } from '../../func/TimeFormater'
+import EditDeleteTimeModalButton from '../buttons/EditDeleteTimeModalButton';
+import EditDeleteTimeModal from '../modals/EditDeleteTimeModal';
 
 interface IDispatchProps {
     GetChangeList: typeof Change.actionCreators.GetChangeList,
@@ -33,9 +33,6 @@ export class FileListRender extends React.Component<FileListProps, {}> {
     componentDidUpdate(prevProps: FileListProps) {
         let props = this.props;
         props.ResetChangeList();
-        // if(prevProps.userName != props.userName){
-        //     props.ResetFileList();
-        // }
         if(props.needGetData) {
             props.GetFileList(props.trackerId, props.userName, props.fileFilter, props.fileListCountView, props.fileListPage);
         }
@@ -78,12 +75,11 @@ export class FileListRender extends React.Component<FileListProps, {}> {
                 </td>
                 <td>
                     {
-                        item.RemoveFromDbTime
-                            ? <div>
+                        item.RemoveFromDbTime != null &&
+                            <div>
                                 <p style={{display: "inline-block"}}>{FormateTime(item.RemoveFromDbTime, false)}</p>
                                 {props.user.userType == "Admin" ? <EditDeleteTimeModalButton onClickHandler={() => this.ButtonClick(item)}/> : null}
                             </div> 
-                            : null
                     }
                 </td>
             </tr>
@@ -95,7 +91,7 @@ export class FileListRender extends React.Component<FileListProps, {}> {
                     ? <div style={{margin: '10px 0px 10px 0px'}}>
                         <p style={{display: 'inline-block', marginRight: '10px'}}>{props.userName}</p>
                         <button type="button" className={"btn btn-default"} 
-                            onClick={props.DeleteUserName}><span className="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                            onClick={props.ResetUserName}><span className="glyphicon glyphicon-remove" aria-hidden="true"></span>
                         </button>
                     </div>
                     : null
@@ -111,11 +107,10 @@ export class FileListRender extends React.Component<FileListProps, {}> {
                 <tr><td colSpan={4}>
                     <Paginator currentPage={props.fileListPage} CountView={props.fileListCountView} movePageAction={this.props.MovePageFileList}/>
                     {
-                        props.fileFilter != null
-                            ? <button type="button" className={"btn btn-default right"} 
-                                onClick={props.DeleteFileFilter}><span className="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+                        props.fileFilter != null &&
+                            <button type="button" className={"btn btn-default right"} 
+                                onClick={props.ResetFileFilter}><span className="glyphicon glyphicon-refresh" aria-hidden="true"></span>
                             </button>
-                            : null
                     }
                     <ViewCounter ViewCounterAction={props.ViewCountFileList} ViewNow={this.props.fileListCountView} />
                 </td></tr>

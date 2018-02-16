@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
-import * as NavMenu from '../components/NavMenu';
+import * as NavMenu from '../../NavMenu';
 
 type InputProps = {
     ViewCounterAction: any,

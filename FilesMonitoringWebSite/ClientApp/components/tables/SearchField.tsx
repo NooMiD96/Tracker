@@ -1,11 +1,11 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { RouteComponentProps } from 'react-router-dom';
-import NavMenu from './NavMenu';
+import NavMenu from '../NavMenu';
 
 interface InputProps {
-    SetFilter: any,
-    DeleteFilter: any,
+    SaveFilter: any,
+    ResetFilter: any,
     ResetChangeList: any,
 }
 
@@ -14,11 +14,11 @@ export default class SearchField extends React.Component<InputProps, {}> {
         if(event.key == "Enter"){
             var inputValue = event.currentTarget.value.trim();
             if(inputValue == ''){
-                this.props.DeleteFilter();
+                this.props.ResetFilter();
                 this.props.ResetChangeList();
                 return;
             }
-            this.props.SetFilter(inputValue);
+            this.props.SaveFilter(inputValue);
             this.props.ResetChangeList();
         }
     }

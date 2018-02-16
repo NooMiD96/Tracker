@@ -14,10 +14,10 @@ namespace FilesMonitoringWebSite.Db.TrackerDb
         public string FileName { get; set; }
         public string FilePath { get; set; }
         public string FullName { get; set; }
-        public int TrackerId { get; set; }
+        public bool IsNeedDelete { get; set; }
         public bool IsWasDeletedChange { get; set; }
         public DateTime? RemoveFromDbTime { get; set; }
-        public bool? IsNeedDelete { get; set; }
+        public int TrackerId { get; set; }
 
         public Trackers Tracker { get; set; }
         public ICollection<Changes> Changes { get; set; }

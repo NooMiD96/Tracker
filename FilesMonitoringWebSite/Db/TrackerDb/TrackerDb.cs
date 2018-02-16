@@ -23,8 +23,6 @@ namespace FilesMonitoringWebSite.Db.TrackerDb
 
                 entity.HasIndex(e => e.FileId);
 
-                entity.Property(e => e.UserId).HasDefaultValueSql("((0))");
-
                 entity.HasOne(d => d.Content)
                     .WithOne(p => p.Changes)
                     .HasForeignKey<Changes>(d => d.ContentId);
@@ -40,9 +38,7 @@ namespace FilesMonitoringWebSite.Db.TrackerDb
 
                 entity.HasIndex(e => e.TrackerId);
 
-                entity.Property(e => e.ExceptionInner)
-                    .IsRequired()
-                    .HasDefaultValueSql("(N'')");
+                entity.Property(e => e.ExceptionInner).IsRequired();
 
                 entity.HasOne(d => d.Tracker)
                     .WithMany(p => p.ClientExceptions)
@@ -63,8 +59,6 @@ namespace FilesMonitoringWebSite.Db.TrackerDb
                 entity.Property(e => e.FileName).IsRequired();
 
                 entity.Property(e => e.FullName).IsRequired();
-
-                entity.Property(e => e.IsNeedDelete).HasDefaultValueSql("((1))");
 
                 entity.HasOne(d => d.Tracker)
                     .WithMany(p => p.Files)

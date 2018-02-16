@@ -34,16 +34,12 @@ namespace FilesMonitoringServer {
                 .HasMany(tr => tr.FileList)
                 .WithOne(fl => fl.Tracker)
                 .HasForeignKey(fl => fl.TrackerId);
-            modelBuilder.Entity<Tracker>()
-                .HasMany(tr => tr.FileList)
-                .WithOne(fl => fl.Tracker)
-                .HasForeignKey(fl => fl.TrackerId);
-            modelBuilder.Entity<File>()
-                .Property(f => f.IsWasDeletedChange)
-                .HasDefaultValue(false);
-            modelBuilder.Entity<File>()
-                .Property(f => f.IsNeedDelete)
-                .HasDefaultValue(true);
+            //modelBuilder.Entity<File>()
+            //    .Property(f => f.IsWasDeletedChange)
+            //    .HasDefaultValue(false);
+            //modelBuilder.Entity<File>()
+            //    .Property(f => f.IsNeedDelete)
+            //    .HasDefaultValue(true);
         }
 
         public bool Contains(int trackerId) {
@@ -227,6 +223,27 @@ namespace FilesMonitoringServer {
                 SaveChanges();
             }
         }
+        private void DeleteAllFilesInDirectory(TrackerEvent evnt, int trackerId)
+        {
+            var files = Files
+                .Where(fl => fl.FullName.IndexOf(evnt.FullName) != -1)
+                .ToList();
+            lock(lockObj)
+            {
+                files.ForEach(file => {
+                    file.ChangeList.Add(new Change()
+                    {
+                        UserId = GetUserId(evnt, trackerId),
+                        EventName = evnt.EventName,
+                        DateTime = evnt.DateTime,
+                    });
+                    file.IsWasDeletedChange = true;
+                    file.IsNeedDelete = true;
+                    file.RemoveFromDbTime = DateTime.Now.AddDays(14);
+                });
+                SaveChanges();
+            }
+        }
 
         public void RenamedEvent(TrackerEvent evnt, int trackerId) {
             var userId = GetUserId(evnt, trackerId);
@@ -263,24 +280,19 @@ namespace FilesMonitoringServer {
             AddChange(evnt, change, null, trackerId);
         }
 
-        private void DeleteAllFilesInDirectory(TrackerEvent evnt, int trackerId) {
-            var files = Files
-                .Where(fl => fl.FullName.IndexOf(evnt.FullName) != -1)
-                .ToList();
-            lock(lockObj) {
-                files.ForEach(file => {
-                    file.ChangeList.Add(new Change() {
-                        UserId = GetUserId(evnt, trackerId),
-                        EventName = evnt.EventName,
-                        DateTime = evnt.DateTime,
-                    });
-                    file.IsWasDeletedChange = true;
-                    file.IsNeedDelete = true;
-                    file.RemoveFromDbTime = DateTime.Now.AddDays(14);
-                });
-                SaveChanges();
-            }
-        }
+        public IQueryable<File> GetFilesToDelete(DateTime now) => (
+            from f in Files
+            where f.IsNeedDelete.Equals(true) && f.RemoveFromDbTime.HasValue && DateTime.Compare(f.RemoveFromDbTime.Value, now) < 0
+            select f);
+
+        public List<Content> GetContentsToDelete(IQueryable<File> files) => (
+            from f in files
+            join ch in Changes on f.FileId equals ch.FileId
+            join co in Contents on ch.ContentId equals co.ContentId
+            where !String.IsNullOrEmpty(co.FilePath)
+            select co
+            ).ToList();
+
 
         private int GetUserId(TrackerEvent evnt, int trackerId) {
             var user = (
@@ -355,8 +367,6 @@ namespace FilesMonitoringServer {
         public TrackerEvents EventName { get; set; }
         [Required]
         public int UserId { get; set; }
-        //[Required]
-        //public string FullName { get; set; }
         [Required]
         public DateTime DateTime { get; set; }
         [ForeignKey(nameof(Content))]

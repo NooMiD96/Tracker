@@ -6,18 +6,18 @@ import * as Tracker from '../store/Tracker';
 import * as File from '../store/File';
 import * as Change from '../store/Change';
 import { ApplicationState } from '../store';
-import TrackerListRender, { TrackerListProps, IDispatchProps as IDispatchPropsTrackerList } from '../components/TrackerListRender';
-import FileListRender, { FileListProps } from '../components/FileListRender';
-import ChangeListRender, { ChangeListProps } from '../components/ChangeListRender';
-import SearchField from '../components/SearchField';
+import TrackerListRender, { TrackerListProps, IDispatchProps as IDispatchPropsTrackerList } from '../components/tables/TrackerListRender';
+import FileListRender, { FileListProps } from '../components/tables/FileListRender';
+import ChangeListRender, { ChangeListProps } from '../components/tables/ChangeListRender';
+import SearchField from '../components/tables/SearchField';
 
 interface IDispatchProps {
     ResetTrackerList: typeof Tracker.actionCreators.ResetTrackerList,
     ResetFileList: typeof File.actionCreators.ResetFileList,
-    SetFileFilter: typeof File.actionCreators.SetFileFilter,
+    SaveFileFilter: typeof File.actionCreators.SaveFileFilter,
     GetFileList: typeof File.actionCreators.GetFileList,
     ResetChangeList: typeof Change.actionCreators.ResetChangeList,
-    DeleteFileFilter: typeof File.actionCreators.DeleteFileFilter,
+    ResetFileFilter: typeof File.actionCreators.ResetFileFilter,
 }
 
 type UserProps =
@@ -41,7 +41,6 @@ class UserChanges extends React.Component<UserProps, {}> {
             isAdministrating: props.isAdministrating,
             userType: props.userType,
             userName: props.userName,
-            tableScale: props.tableScale,
         } as User.UserState;
 
         const someState ={
@@ -54,8 +53,7 @@ class UserChanges extends React.Component<UserProps, {}> {
 
         return this.props.userType != null
             ? <div className="row">
-                {/* {React.createElement(Download.default, {} as Download.DownloadProps)} */}
-                <SearchField SetFilter={props.SetFileFilter} DeleteFilter={props.DeleteFileFilter} ResetChangeList={props.ResetChangeList}/>
+                <SearchField SaveFilter={props.SaveFileFilter} ResetFilter={props.ResetFileFilter} ResetChangeList={props.ResetChangeList}/>
                 {React.createElement(TrackerListRender, someState as TrackerListProps)}
                 {React.createElement(FileListRender, { user: user } as FileListProps)}
                 {React.createElement(ChangeListRender, { user: user } as ChangeListProps)}
@@ -72,19 +70,11 @@ function mapStateToProps(state: ApplicationState) {
 const mapDispatchToProps = {
     ResetTrackerList: Tracker.actionCreators.ResetTrackerList,
     ResetFileList: File.actionCreators.ResetFileList,
-    SetFileFilter: File.actionCreators.SetFileFilter,
-    DeleteFileFilter: File.actionCreators.DeleteFileFilter,
+    SaveFileFilter: File.actionCreators.SaveFileFilter,
+    ResetFileFilter: File.actionCreators.ResetFileFilter,
     GetFileList: File.actionCreators.GetFileList,
     ResetChangeList: Change.actionCreators.ResetChangeList,
 }
-
-// function mapDispatchToProps(dispatch: any) {
-//     return {
-//         ResetTrackerList: () => dispatch(Tracker.actionCreators.ResetTrackerList()),
-//         ResetFileList: () => dispatch(File.actionCreators.ResetFileList()),
-//         ResetChangeList: () => dispatch(Change.actionCreators.ResetChangeList()),
-//     } as IDispatchProps;
-// };
 
 export default connect(
     mapStateToProps,

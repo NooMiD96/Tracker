@@ -7,9 +7,9 @@ namespace FilesMonitoringWebSite.Db.TrackerDb
     {
         public int ExceptionId { get; set; }
         public DateTime DateTime { get; set; }
+        public string ExceptionInner { get; set; }
         public int TrackerId { get; set; }
         public int UserId { get; set; }
-        public string ExceptionInner { get; set; }
 
         public Trackers Tracker { get; set; }
     }

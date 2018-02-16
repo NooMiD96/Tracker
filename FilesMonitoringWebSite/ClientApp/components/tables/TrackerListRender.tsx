@@ -1,15 +1,15 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
-import { ApplicationState } from '../store';
-import * as Tracker from '../store/Tracker';
-import { UserState } from '../store/User';
-import Paginator from './Paginator';
-import AccessTrigerModalButton from './AccessTrigerModalButton';
-import AccessTrigerModal from './AccessTrigerModal';
-import EditUserModalButton from './EditUserModalButton';
-import EditUserModal from './EditUserModal';
-import ViewCounter from './ViewCounter';
+import { ApplicationState } from '../../store';
+import * as Tracker from '../../store/Tracker';
+import { UserState } from '../../store/User';
+import Paginator from './components/Paginator';
+import ViewCounter from './components/ViewCounter';
+import AccessTrigerModalButton from '../buttons/AccessTrigerModalButton';
+import EditUserModalButton from '../buttons/EditUserModalButton';
+import AccessTrigerModal from '../modals/AccessTrigerModal';
+import EditUserModal from '../modals/EditUserModal';
 
 export interface IDispatchProps {
     GetSomeList: (trackerId: number | string, userName?: string) => void,
@@ -23,7 +23,7 @@ export type TrackerListProps =
 
 export class TrackerListRender extends React.Component<TrackerListProps, {}> {
     componentWillMount() {
-        this.props.GetTrackerList(false);
+        this.props.GetTrackerList();
     }
     componentDidMount(){
         this.modalContainer = document.getElementById('modal-container') as HTMLDivElement;
@@ -32,17 +32,17 @@ export class TrackerListRender extends React.Component<TrackerListProps, {}> {
         let props = this.props;
         if (props.needGetData) {
             if (props.user.isAdministrating) {
-                props.GetTrackerList(true, props.trackerListCountView, props.trackerListPage);
+                props.GetTrackerList(props.trackerListCountView, props.trackerListPage);
             } else {
-                props.GetTrackerList(false, props.trackerListCountView, props.trackerListPage);
+                props.GetTrackerList(props.trackerListCountView, props.trackerListPage);
             }
         }
         if (prevProps.user.isAdministrating != props.user.isAdministrating) {
             props.funcs.ResetSomeList();
             if (props.user.isAdministrating) {
-                props.GetTrackerList(true, props.trackerListCountView, props.trackerListPage);
+                props.GetTrackerList(props.trackerListCountView, props.trackerListPage);
             } else {
-                props.GetTrackerList(false, props.trackerListCountView, props.trackerListPage);
+                props.GetTrackerList(props.trackerListCountView, props.trackerListPage);
             }
         }
     }

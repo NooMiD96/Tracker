@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { RouteComponentProps } from 'react-router-dom';
-import NavMenu from './NavMenu';
+import NavMenu from '../NavMenu';
 import * as $ from 'jquery';
 
 interface InputProps {
@@ -11,12 +11,12 @@ interface InputProps {
 }
 
 export default class EditUserModal extends React.Component<InputProps, {}> {
+    modal: any;
+    
     componentDidMount(){
         this.modal = $('#EditUserModal');
         this.modal.modal('show');
     }
-
-    modal: any;
 
     EditHandler = () => {
         var isEmpty = false;

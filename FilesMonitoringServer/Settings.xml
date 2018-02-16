@@ -2,7 +2,7 @@
 <Config>
     <ConnectionString>Data Source=(localdb)\mssqllocaldb;Initial Catalog=Tracker;Integrated Security=True;MultipleActiveResultSets=True</ConnectionString>
     <Server>
-      <ServerIP></ServerIP>
+      <ServerIP>10.10.0.167</ServerIP>
       <ServerPort>8000</ServerPort>
     </Server>
 </Config>

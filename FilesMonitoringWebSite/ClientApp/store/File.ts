@@ -1,11 +1,11 @@
 import { fetch, addTask } from 'domain-task';
 import { Action, Reducer, ActionCreator } from 'redux';
 import { AppThunkAction } from './';
-import { functions } from '../func/fetchHelper';
+import { functions } from '../func/RequestHelper';
 // -----------------
 // STATE - This defines the type of data maintained in the Redux store.
 export interface FileState {
-    fileList: File[] | null,
+    fileList?: File[],
     fileListCountView: number,
     fileListPage: number,
     needGetData: boolean,
@@ -37,82 +37,54 @@ interface MovePageFileListAction {
     type: 'MOVE_PAGE_FILE_LIST_ACTION',
     prevOrNext: number,
 }
-interface SaveTrackerIdAction {
-    type: 'SAVE_TRACKER_ID_ACTION',
-    trackerId: number,
-}
-interface ResetFileListAction {
-    type: 'RESET_FILE_LIST_ACTION',
-}
 interface ViewCountFileListAction {
     type: 'VIEW_COUNT_FILE_LIST_ACTION',
     count: number,
 }
-interface SetUserNameAction {
-    type: 'SET_USER_NAME_ACTION',
-    userName: string,
-}
-interface SetFileFilterAction {
-    type: 'SET_FILE_FILTER_ACTION',
-    fileFilter: string,
-}
 interface EditDeleteTimeAction {
     type: 'EDIT_DELETE_TIME_ACTION',
 }
-interface DeleteFileFilterAction {
-    type: 'DELETE_FILE_FILTER_ACTION',
+interface SaveTrackerIdAction {
+    type: 'SAVE_TRACKER_ID_ACTION',
+    trackerId: number,
 }
-interface DeleteUserNameAction {
-    type: 'DELETE_USER_NAME_ACTION',
+interface SaveUserNameAction {
+    type: 'SAVE_USER_NAME_ACTION',
+    userName: string,
+}
+interface SaveFileFilterAction {
+    type: 'SAVE_FILE_FILTER_ACTION',
+    fileFilter: string,
+}
+interface ResetFileListAction {
+    type: 'RESET_FILE_LIST_ACTION',
+}
+interface ResetUserNameAction {
+    type: 'RESET_USER_NAME_ACTION',
+}
+interface ResetFileFilterAction {
+    type: 'RESET_FILE_FILTER_ACTION',
 }
 // Declare a 'discriminated union' type. This guarantees that all references to 'type' properties contain one of the
 // declared type strings (and not any other arbitrary string).
 
-type KnownAction = GetFileListAction | SetFileListAction | MovePageFileListAction | ResetFileListAction | ViewCountFileListAction
-    | SaveTrackerIdAction | SetUserNameAction | SetFileFilterAction | EditDeleteTimeAction | DeleteFileFilterAction | DeleteUserNameAction;
+type KnownAction = GetFileListAction | SetFileListAction | MovePageFileListAction | ViewCountFileListAction | EditDeleteTimeAction
+    | SaveTrackerIdAction | SaveUserNameAction | SaveFileFilterAction | ResetFileListAction | ResetUserNameAction | ResetFileFilterAction;
 
 // ----------------
 // ACTION CREATORS - These are functions exposed to UI components that will trigger a state transition.
 // They don't directly mutate state, but they can have external side-effects (such as loading data).
 export const actionCreators = {
-    GetFileList: (trackerid?: number, userName?: string, fileFilter?: string, count?: string | number, page?: string | number): AppThunkAction<GetFileListAction | SetFileListAction | SaveTrackerIdAction | SetUserNameAction> => (dispatch, getState) => {
-        let params = "";
-        if (trackerid != null) {
-            params = `?trackerid=${trackerid}`;
-            if(count == null || page == null){
-                dispatch({ type: 'SAVE_TRACKER_ID_ACTION', trackerId: trackerid });
-            }
-        }
-        if(userName != null){
-            if (params.length != 0) {
-                params += `&`;
-            } else {
-                params += `?`;
-            }
-            params += `userName=${userName}`;
-            if(count == null || page == null){
-                dispatch({ type: 'SET_USER_NAME_ACTION', userName:userName });
-            }
-        }
-        if (fileFilter != null) {
-            if (params.length != 0) {
-                params += `&`;
-            } else {
-                params += `?`;
-            }
-            params += `filter=${fileFilter}`;
-        }
-        if (count != null && page != null) {
-            if (params.length != 0) {
-                params += `&`;
-            } else {
-                params += `?`;
-            }
-            params += `count=${count}&page=${page}`;
-        }
+    GetFileList: (trackerid?: number, userName?: string, fileFilter?: string, count?: number, page?: number): AppThunkAction<GetFileListAction | SetFileListAction> => (dispatch, getState) => {
+        const params = functions.GetParams(trackerid, undefined, userName, fileFilter, count, page);
+
         let fetchTask = functions.fetchTask('GetFileList', 'GET', params)
             .then(data => {
-                data = data as File[] | null;
+                if(data == null){
+
+                }else{
+
+                data = data as File[];
                 if(data){
                     data.forEach((item:File) => {
                         if(item.RemoveFromDbTime){
@@ -120,7 +92,9 @@ export const actionCreators = {
                         }
                     });
                 }
-                dispatch({ type: 'SET_FILE_LIST', fileList: data as File[] | null });
+                dispatch({ type: 'SET_FILE_LIST', fileList: data });
+                }
+                
             }).catch(err => {
                 console.log('Error :-S in change list', err);
             });
@@ -129,7 +103,6 @@ export const actionCreators = {
         dispatch({ type: 'GET_FILE_LIST' });
     },
     EditDeleteTime: (fileId:number, dateTime: Date, isNeedDelete: boolean): AppThunkAction<EditDeleteTimeAction> => (dispatch, getState) => {
-        debugger;
         let fetchTask = fetch(`/api/Admin/EditDeleteTime`, {
                 method: 'PUT',
                 body: JSON.stringify({fileId: fileId, dateTime: dateTime, isNeedDelete: isNeedDelete}),
@@ -148,14 +121,16 @@ export const actionCreators = {
     MovePageFileList: (prevOrNext: number) => <MovePageFileListAction>{ type: 'MOVE_PAGE_FILE_LIST_ACTION', prevOrNext: prevOrNext },
     ResetFileList: () => <ResetFileListAction>{ type: 'RESET_FILE_LIST_ACTION' },
     ViewCountFileList: (count: number) => <ViewCountFileListAction>{ type: 'VIEW_COUNT_FILE_LIST_ACTION', count: count },
-    SetFileFilter:(fileFilter:string) => <SetFileFilterAction>{ type: 'SET_FILE_FILTER_ACTION', fileFilter:fileFilter },
-    DeleteFileFilter:() => <DeleteFileFilterAction>{ type: 'DELETE_FILE_FILTER_ACTION' },
-    DeleteUserName:() => <DeleteUserNameAction>{ type: 'DELETE_USER_NAME_ACTION' },
+    SaveTrackerId: (trackerId: number) => <SaveTrackerIdAction>{ type: 'SAVE_TRACKER_ID_ACTION', trackerId: trackerId },
+    SaveUserName: (userName: string) => <SaveUserNameAction>{ type: 'SAVE_USER_NAME_ACTION', userName: userName },
+    ResetUserName:() => <ResetUserNameAction>{ type: 'RESET_USER_NAME_ACTION' },
+    SaveFileFilter:(fileFilter:string) => <SaveFileFilterAction>{ type: 'SAVE_FILE_FILTER_ACTION', fileFilter:fileFilter },
+    ResetFileFilter:() => <ResetFileFilterAction>{ type: 'RESET_FILE_FILTER_ACTION' },
 };
 
 // ----------------
 // REDUCER - For a given state and action, returns the new state. To support time travel, this must not mutate the old state.
-const unloadedState: FileState = { fileList: null, fileListCountView: 10, fileListPage: 1, needGetData: false, fileFilter: undefined };
+const unloadedState: FileState = { fileListCountView: 10, fileListPage: 1, needGetData: false };
 
 export const reducer: Reducer<FileState> = (state: FileState, action: KnownAction) => {
     switch (action.type) {
@@ -171,7 +146,7 @@ export const reducer: Reducer<FileState> = (state: FileState, action: KnownActio
                 if(state.fileListPage == 1){
                     return{
                         ...state,
-                        fileList: null,
+                        fileList: undefined,
                         needGetData: false,
                     }
                 }
@@ -180,7 +155,7 @@ export const reducer: Reducer<FileState> = (state: FileState, action: KnownActio
                     : state.fileListPage - 1;
                 return {
                     ...state,
-                    fileList: needEmptyList ? null : state.fileList,
+                    fileList: needEmptyList ? undefined : state.fileList,
                     fileListPage: page,
                     needGetData: false,
                 }
@@ -190,20 +165,6 @@ export const reducer: Reducer<FileState> = (state: FileState, action: KnownActio
                     fileList: action.fileList,
                     needGetData: false,
                 };
-            }
-
-        case 'SAVE_TRACKER_ID_ACTION':
-            return {
-                ...state,
-                trackerId: action.trackerId,
-                fileListPage: 1,
-            }
-
-        case 'SET_USER_NAME_ACTION':
-            return {
-                ...state,
-                userName: action.userName,
-                fileListPage: 1,
             }
 
         case 'MOVE_PAGE_FILE_LIST_ACTION':
@@ -222,21 +183,10 @@ export const reducer: Reducer<FileState> = (state: FileState, action: KnownActio
                 }
             }
 
-        case 'RESET_FILE_LIST_ACTION':
-            return unloadedState;
-
         case 'VIEW_COUNT_FILE_LIST_ACTION':
             return {
                 ...state,
                 fileListCountView: action.count,
-                fileListPage: 1,
-                needGetData: true,
-            }
-
-        case 'SET_FILE_FILTER_ACTION':
-            return {
-                ...state,
-                fileFilter: action.fileFilter,
                 fileListPage: 1,
                 needGetData: true,
             }
@@ -247,7 +197,29 @@ export const reducer: Reducer<FileState> = (state: FileState, action: KnownActio
                 needGetData: true,
             }
 
-        case 'DELETE_FILE_FILTER_ACTION':
+        case 'SAVE_TRACKER_ID_ACTION':
+            return {
+                ...state,
+                trackerId: action.trackerId,
+                fileListPage: 1,
+            }
+
+        case 'SAVE_USER_NAME_ACTION':
+            return {
+                ...state,
+                userName: action.userName,
+                fileListPage: 1,
+            }
+
+        case 'SAVE_FILE_FILTER_ACTION':
+            return {
+                ...state,
+                fileFilter: action.fileFilter,
+                fileListPage: 1,
+                needGetData: true,
+            }
+
+        case 'RESET_FILE_FILTER_ACTION':
             return {
                 ...state,
                 fileFilter: undefined,
@@ -255,13 +227,16 @@ export const reducer: Reducer<FileState> = (state: FileState, action: KnownActio
                 needGetData: true,
             }
 
-        case 'DELETE_USER_NAME_ACTION':
+        case 'RESET_USER_NAME_ACTION':
             return {
                 ...state,
                 userName: undefined,
                 fileListPage: 1,
                 needGetData: true,
             }
+
+        case 'RESET_FILE_LIST_ACTION':
+            return unloadedState;
 
         default:
             // The following line guarantees that every action in the KnownAction union has been covered by a case above

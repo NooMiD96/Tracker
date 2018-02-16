@@ -5,8 +5,8 @@ import * as User from '../store/User';
 import * as Tracker from '../store/Tracker';
 import * as Exceptions from '../store/Exceptions';
 import { ApplicationState } from '../store';
-import TrackerListRender, { IDispatchProps as IDispatchPropsTrackerList, TrackerListProps } from '../components/TrackerListRender'
-import ExceptionListRender, { ExceptionListProps } from '../components/ExceptionListRender';
+import TrackerListRender, { IDispatchProps as IDispatchPropsTrackerList, TrackerListProps } from '../components/tables/TrackerListRender';
+import ExceptionListRender, { ExceptionListProps } from '../components/tables/ExceptionListRender';
 
 interface IDispatchProps {
     ResetTrackerList: typeof Tracker.actionCreators.ResetTrackerList,
@@ -28,12 +28,11 @@ class UserExceptions extends React.Component<UserExceptionsProps, {}> {
     }
 
     public render() {
-        let props = this.props;
-        let user = {
+        const props = this.props;
+        const user = {
             isAdministrating: props.isAdministrating,
             userType: props.userType,
             userName: props.userName,
-            tableScale: props.tableScale,
         } as User.UserState;
 
         const someState = {
@@ -44,12 +43,11 @@ class UserExceptions extends React.Component<UserExceptionsProps, {}> {
             } as IDispatchPropsTrackerList
         }
 
-        return this.props.userType != null
-            ? <div className="row">
+        return this.props.userType != null &&
+            <div className="row">
                 {React.createElement(TrackerListRender, someState as TrackerListProps)}
                 {React.createElement(ExceptionListRender, { user: user } as ExceptionListProps)}
             </div>
-            : null
     }
 }
 

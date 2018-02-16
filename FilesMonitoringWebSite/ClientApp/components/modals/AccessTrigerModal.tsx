@@ -1,8 +1,8 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { RouteComponentProps } from 'react-router-dom';
-import NavMenu from './NavMenu';
-import * as Tracker from '../store/Tracker';
+import NavMenu from '../NavMenu';
+import * as Tracker from '../../store/Tracker';
 import * as $ from 'jquery';
 
 interface InputProps {
@@ -13,12 +13,12 @@ interface InputProps {
 }
 
 export default class AccessTrigerModal extends React.Component<InputProps, {}> {
+    modal: any;
+
     componentDidMount(){
         this.modal = $('#AccessTrigerModal');
         this.modal.modal('show');
     }
-
-    modal: any;
 
     CreateAccess = () => {
         var DOM_inputPW = ReactDOM.findDOMNode(this.refs.inputPW) as HTMLInputElement;

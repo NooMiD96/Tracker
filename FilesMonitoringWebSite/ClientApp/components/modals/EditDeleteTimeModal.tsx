@@ -11,14 +11,14 @@ interface InputProps {
 }
 
 export default class EditDeleteTimeModal extends React.Component<InputProps, {}> {
+    date: any;
+    modal: any;
+
     componentDidMount(){
         this.modal = $('#EditDeleteTimeModal');
         this.modal.modal('show');
         this.date = new Date();
     }
-    
-    date: any;
-    modal: any;
 
     validDate(current: Date) : boolean {
         var date = new Date();

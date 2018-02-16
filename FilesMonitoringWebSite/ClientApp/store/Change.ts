@@ -1,11 +1,11 @@
 import { fetch, addTask } from 'domain-task';
 import { Action, Reducer, ActionCreator } from 'redux';
 import { AppThunkAction } from './';
-import { functions } from '../func/fetchHelper';
+import { functions } from '../func/RequestHelper';
 // -----------------
 // STATE - This defines the type of data maintained in the Redux store.
 export interface ChangeState {
-    changeList: Change[] | null,
+    changeList?: Change[],
     changeListCountView: number,
     changeListPage: number,
     needGetData: boolean,
@@ -17,8 +17,8 @@ export interface Change {
     DateTime: Date,
     Content: string,
     UserName: string,
-    OldFullName: string | null,
-    OldName: string | null,
+    OldFullName?: string,
+    OldName?: string,
 }
 export enum ChangeEvents {
     Changed,
@@ -36,7 +36,7 @@ interface GetChangeListAction {
 }
 interface SetChangeListAction {
     type: 'SET_CHANGE_LIST',
-    changeList: Change[] | null,
+    changeList?: Change[],
 }
 interface MovePageChangeListAction {
     type: 'MOVE_PAGE_CHANGE_LIST_ACTION',
@@ -63,32 +63,22 @@ type KnownAction = GetChangeListAction | SetChangeListAction | MovePageChangeLis
 // ACTION CREATORS - These are functions exposed to UI components that will trigger a state transition.
 // They don't directly mutate state, but they can have external side-effects (such as loading data).
 export const actionCreators = {
-    GetChangeList: (fileId?: number, count?: string | number, page?: string | number): AppThunkAction<GetChangeListAction | SetChangeListAction | SaveFileIdAction> => (dispatch, getState) => {
-        let params = "";
-        if (fileId != null) {
-            params = `?fileId=${fileId}`;
-        }
-        if (count != null && page != null) {
-            if (params.length != 0) {
-                params += `&`;
-            } else {
-                params += `?`;
-            }
-            params += `count=${count}&page=${page}`;
-        }
+    GetChangeList: (fileId?: number, count?: number, page?: number): AppThunkAction<GetChangeListAction | SetChangeListAction> => (dispatch, getState) => {
+        const params = functions.GetParams(undefined, fileId, undefined, undefined, count, page);
+
         // Only load data if it's something we don't already have (and are not already loading)
         let fetchTask = functions.fetchTask('GetChangeList', 'GET', params)
             .then(data => {
                 if(data == null){
-                    dispatch({ type: 'SET_CHANGE_LIST', changeList: null });
+                    dispatch({ type: 'SET_CHANGE_LIST' });
                 }else{
-                    data = data as Change[] | null;
+                    data = data as Change[];
                     if(data){
                         data.forEach((item:Change) => {
                             item.DateTime = new Date(item.DateTime);
                         });
                     }
-                    dispatch({ type: 'SET_CHANGE_LIST', changeList: data as Change[] | null });
+                    dispatch({ type: 'SET_CHANGE_LIST', changeList: data});
                 }
                 
             }).catch(err => {
@@ -96,7 +86,6 @@ export const actionCreators = {
             });
 
         addTask(fetchTask); // Ensure server-side prerendering waits for this to complete
-        dispatch({ type: 'SAVE_FILE_ID_ACTION', fileId: fileId });
         dispatch({ type: 'GET_CHANGE_LIST' });
     },
     MovePageChangeList: (prevOrNext: number) => <MovePageChangeListAction>{ type: 'MOVE_PAGE_CHANGE_LIST_ACTION', prevOrNext: prevOrNext },
@@ -106,7 +95,7 @@ export const actionCreators = {
 
 // ----------------
 // REDUCER - For a given state and action, returns the new state. To support time travel, this must not mutate the old state.
-const unloadedState: ChangeState = { changeList: null, changeListCountView: 10, changeListPage: 1, needGetData: false };
+const unloadedState: ChangeState = { changeListCountView: 10, changeListPage: 1, needGetData: false };
 
 export const reducer: Reducer<ChangeState> = (state: ChangeState, action: KnownAction) => {
     switch (action.type) {

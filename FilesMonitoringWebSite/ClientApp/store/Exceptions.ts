@@ -1,17 +1,18 @@
 import { fetch, addTask } from 'domain-task';
 import { Action, Reducer, ActionCreator } from 'redux';
 import { AppThunkAction } from './';
+import { functions } from '../func/RequestHelper';
 // -----------------
 // STATE - This defines the type of data maintained in the Redux store.
 export interface ExceptionState {
-    exceptionList: Exception[] | null,
+    exceptionList?: Exception[],
     exceptionListCountView: number,
     exceptionListPage: number,
     needGetData: boolean,
     trackerId?: number,
     userName?: string,
 }
-export interface Exception{
+export interface Exception {
     ExceptionInner: string,
     DateTime: Date,
 }
@@ -25,7 +26,7 @@ interface GetExceptionsAction {
 }
 interface SetExceptionsAction {
     type: 'SET_EXCEPTIONS',
-    exceptionList: Exception[] | null,
+    exceptionList?: Exception[],
 }
 interface MovePageExceptionListAction {
     type: 'MOVE_PAGE_EXCEPTION_LIST_ACTION',
@@ -51,40 +52,16 @@ interface DeleteUserNameAction {
 }
 // Declare a 'discriminated union' type. This guarantees that all references to 'type' properties contain one of the
 // declared type strings (and not any other arbitrary string).
-type KnownAction = GetExceptionsAction | SetExceptionsAction | MovePageExceptionListAction | ResetExceptionListAction |MovePageExceptionListAction | ViewCountExceptionListAction
+type KnownAction = GetExceptionsAction | SetExceptionsAction | MovePageExceptionListAction | ResetExceptionListAction | MovePageExceptionListAction | ViewCountExceptionListAction
     | SaveTrackerIdAction | SaveUserNameAction | DeleteUserNameAction;
 
 // ----------------
 // ACTION CREATORS - These are functions exposed to UI components that will trigger a state transition.
 // They don't directly mutate state, but they can have external side-effects (such as loading data).
 export const actionCreators = {
-    GetExceptionList: (trackerId?: number, userName?: string, count?: string | number, page?: string | number): AppThunkAction<GetExceptionsAction | SetExceptionsAction | SaveTrackerIdAction | SaveUserNameAction> => (dispatch, getState) => {
-        let params = "";
-        if (trackerId != null) {
-            params = `?trackerid=${trackerId}`;
-            if(count == null || page == null){
-                dispatch({ type: 'SAVE_TRACKER_ID_ACTION', trackerId: trackerId });
-            }
-        }
-        if(userName != null){
-            if (params.length != 0) {
-                params += `&`;
-            } else {
-                params += `?`;
-            }
-            params += `userName=${userName}`;
-            if(count == null || page == null){
-                dispatch({ type: 'SAVE_USER_NAME_ACTION', userName:userName });
-            }
-        }
-        if (count != null && page != null) {
-            if (params.length != 0) {
-                params += `&`;
-            } else {
-                params += `?`;
-            }
-            params += `count=${count}&page=${page}`;
-        }
+    GetExceptionList: (trackerId?: number, userName?: string, count?: number, page?: number): AppThunkAction<GetExceptionsAction | SetExceptionsAction | SaveTrackerIdAction | SaveUserNameAction> => (dispatch, getState) => {
+        let params = functions.GetParams(trackerId, undefined, userName, undefined, count, page);
+
         let fetchTask = fetch(`/api/Tracker/GetExceptionList` + params, {
             method: 'GET',
             credentials: "same-origin"
@@ -92,19 +69,25 @@ export const actionCreators = {
             if (response.status !== 200) return undefined;
             return response.json();
         }).then(data => {
-            data = data as Exception[] | null;
-            if(data){
-                data.forEach((item:Exception) => {
-                    item.DateTime = new Date(item.DateTime);
-                });
+            if (data == null) {
+                dispatch({ type: 'SET_EXCEPTIONS'});
+            }else{
+                data = data as Exception[];
+                if (data) {
+                    data.forEach((item: Exception) => {
+                        item.DateTime = new Date(item.DateTime);
+                    });
+                }
+                
+                dispatch({ type: 'SET_EXCEPTIONS', exceptionList: data });
             }
-            dispatch({ type: 'SET_EXCEPTIONS', exceptionList: data as Exception[] | null });
+            
         }).catch(err => {
             console.log('Error :-S in user', err);
         });
 
         addTask(fetchTask); // Ensure server-side prerendering waits for this to complete
-        dispatch({type: 'GET_EXCEPTIONS'})
+        dispatch({ type: 'GET_EXCEPTIONS' })
     },
     MovePageExceptionList: (prevOrNext: number) => <MovePageExceptionListAction>{ type: 'MOVE_PAGE_EXCEPTION_LIST_ACTION', prevOrNext: prevOrNext },
     ResetExceptionList: () => <ResetExceptionListAction>{ type: 'RESET_EXCEPTION_LIST_ACTION' },
@@ -114,7 +97,7 @@ export const actionCreators = {
 
 // ----------------
 // REDUCER - For a given state and action, returns the new state. To support time travel, this must not mutate the old state.
-const unloadedState: ExceptionState = { exceptionList: null, exceptionListCountView: 10, exceptionListPage: 1, needGetData: false };
+const unloadedState: ExceptionState = { exceptionListCountView: 10, exceptionListPage: 1, needGetData: false };
 
 export const reducer: Reducer<ExceptionState> = (state: ExceptionState, action: KnownAction) => {
     switch (action.type) {
@@ -125,11 +108,11 @@ export const reducer: Reducer<ExceptionState> = (state: ExceptionState, action: 
             };
 
         case 'SET_EXCEPTIONS':
-            if(action.exceptionList == null){
-                if(state.exceptionListPage == 1){
-                    return{
+            if (action.exceptionList == null) {
+                if (state.exceptionListPage == 1) {
+                    return {
                         ...state,
-                        exceptionList: null,
+                        exceptionList: undefined,
                         needGetData: false,
                     }
                 }
@@ -142,7 +125,7 @@ export const reducer: Reducer<ExceptionState> = (state: ExceptionState, action: 
                     exceptionListPage: page,
                     needGetData: false,
                 }
-            }else{
+            } else {
                 return {
                     ...state,
                     exceptionList: action.exceptionList,
@@ -170,7 +153,7 @@ export const reducer: Reducer<ExceptionState> = (state: ExceptionState, action: 
             return unloadedState;
 
         case 'VIEW_COUNT_EXCEPTION_LIST_ACTION':
-            return{
+            return {
                 ...state,
                 exceptionListCountView: action.count,
                 exceptionListPage: 1,
@@ -185,7 +168,7 @@ export const reducer: Reducer<ExceptionState> = (state: ExceptionState, action: 
             }
 
         case 'SAVE_USER_NAME_ACTION':
-            return{
+            return {
                 ...state,
                 userName: action.userName,
                 exceptionListPage: 1,
@@ -198,7 +181,7 @@ export const reducer: Reducer<ExceptionState> = (state: ExceptionState, action: 
                 needGetData: true,
                 exceptionListPage: 1,
             }
-            
+
         default:
             // The following line guarantees that every action in the KnownAction union has been covered by a case above
             const exhaustiveCheck: never = action;

@@ -12,8 +12,8 @@ using System;
 namespace FilesMonitoringServer.Migrations
 {
     [DbContext(typeof(TrackerDb))]
-    [Migration("20180201091004_CanNullDeleteTime")]
-    partial class CanNullDeleteTime
+    [Migration("20180216152101_InitMigration")]
+    partial class InitMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -29,8 +29,7 @@ namespace FilesMonitoringServer.Migrations
 
                     b.Property<int?>("ContentId");
 
-                    b.Property<DateTime?>("DateTime")
-                        .IsRequired();
+                    b.Property<DateTime>("DateTime");
 
                     b.Property<int>("EventName");
 
@@ -51,6 +50,27 @@ namespace FilesMonitoringServer.Migrations
                     b.HasIndex("FileId");
 
                     b.ToTable("Changes");
+                });
+
+            modelBuilder.Entity("FilesMonitoringServer.ClientException", b =>
+                {
+                    b.Property<int>("ExceptionId")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<DateTime>("DateTime");
+
+                    b.Property<string>("ExceptionInner")
+                        .IsRequired();
+
+                    b.Property<int>("TrackerId");
+
+                    b.Property<int>("UserId");
+
+                    b.HasKey("ExceptionId");
+
+                    b.HasIndex("TrackerId");
+
+                    b.ToTable("ClientExceptions");
                 });
 
             modelBuilder.Entity("FilesMonitoringServer.Content", b =>
@@ -80,11 +100,11 @@ namespace FilesMonitoringServer.Migrations
                     b.Property<string>("FullName")
                         .IsRequired();
 
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValue(false);
+                    b.Property<bool>("IsNeedDelete");
 
-                    b.Property<DateTime>("RemoveFromDbTime");
+                    b.Property<bool>("IsWasDeletedChange");
+
+                    b.Property<DateTime?>("RemoveFromDbTime");
 
                     b.Property<int>("TrackerId");
 
@@ -132,6 +152,14 @@ namespace FilesMonitoringServer.Migrations
                     b.HasOne("FilesMonitoringServer.File", "File")
                         .WithMany("ChangeList")
                         .HasForeignKey("FileId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("FilesMonitoringServer.ClientException", b =>
+                {
+                    b.HasOne("FilesMonitoringServer.Tracker")
+                        .WithMany("ClientExceptionList")
+                        .HasForeignKey("TrackerId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

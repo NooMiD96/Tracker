@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { ApplicationState }  from '../store';
-import { UserState } from 'ClientApp/store/User';
-import * as ExceptionState from '../store/Exceptions';
-import Paginator from './Paginator';
-import ViewCounter from './ViewCounter';
-import { FormateTime } from '../func/TimeFormater'
+import { ApplicationState }  from '../../store';
+import { UserState } from '../../store/User';
+import * as ExceptionState from '../../store/Exceptions';
+import Paginator from './components/Paginator';
+import ViewCounter from './components/ViewCounter';
+import { FormateTime } from '../../func/TimeFormater'
 
 export type ExceptionListProps =
     ExceptionState.ExceptionState
@@ -13,11 +13,6 @@ export type ExceptionListProps =
     & {user: UserState};
 
 export class ExceptionListRender extends React.Component<ExceptionListProps, {}> {
-    // componentDidMount(){
-    //     if(this.props.user.userType == "User"){
-    //         this.props.GetFileList();
-    //     }
-    // }
     componentDidUpdate(prevProps: ExceptionListProps) {
         let props = this.props;
         if(props.needGetData) {

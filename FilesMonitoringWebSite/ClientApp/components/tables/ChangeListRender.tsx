@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { ApplicationState }  from '../store';
 import { RouteComponentProps } from 'react-router-dom';
-import * as Change from '../store/Change';
-import * as Helper from '../func/fetchHelper';
+import { ApplicationState }  from '../../store';
+import * as Change from '../../store/Change';
+import * as Helper from '../../func/RequestHelper';
+import { FormateTime } from '../../func/TimeFormater';
 import { UserState } from 'ClientApp/store/User';
-import Paginator from './Paginator';
-import ViewCounter from './ViewCounter';
-import { FormateTime } from '../func/TimeFormater';
+import Paginator from './components/Paginator';
+import ViewCounter from './components/ViewCounter';
 
 export type ChangeListProps =
     Change.ChangeState
@@ -38,9 +38,8 @@ export class ChangeListRender extends React.Component<ChangeListProps, {}> {
                 </td>
                 <td>
                     {
-                        item.EventName == Change.ChangeEvents.Changed || item.EventName == Change.ChangeEvents.Created
-                            ? <a className="clickable-link" onClick={() => Helper.functions.DownloadFile(item.Id.toString())}>Download</a>
-                            : null
+                        item.EventName == Change.ChangeEvents.Changed || item.EventName == Change.ChangeEvents.Created &&
+                            <a className="clickable-link" onClick={() => Helper.functions.DownloadFile(item.Id.toString())}>Download</a>
                     }
                 </td>
                 <td>
