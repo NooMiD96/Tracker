@@ -17,7 +17,6 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Configuration;
 using System.Collections.Specialized;
-
 using Microsoft.Extensions.Configuration;
 
 /// <summary>

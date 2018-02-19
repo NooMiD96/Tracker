@@ -11,6 +11,7 @@ using System.Net.Sockets;
 using System.Text;
 using FilesMonitoring;
 using System.IO.Compression;
+using Newtonsoft.Json;
 
 namespace FilesMonitoring {
     public class SQLiteDb :DbContext {
@@ -46,18 +47,29 @@ namespace FilesMonitoring {
                     TrackerEvent = item
                 };
 
-                switch(item.EventName) {
+                switch(item.EventName)
+                {
                     case TrackerEvents.Changed:
                     case TrackerEvents.Created:
                         fi = new FileInfo(item.FullName);
-                        if(fi.Length < sizeLimit) {
+                        if(fi.Length < sizeLimit)
+                        {
                             //TODO: catch exaption
-                            GetContentFromFile(fi, item);
+                            try
+                            {
+                                GetContentFromFile(fi, item);
 
-                            teInfo.IsContentInTrackerEvent = true;
-                        } else {
+                                teInfo.IsContentInTrackerEvent = true;
+
+                            } catch
+                            {
+                                continue;
+                            }
+                        } else
+                        {
                             var path = ArchivetedFile(item.Name, item.FullName);
-                            if(!String.IsNullOrEmpty(path)) {
+                            if(!String.IsNullOrEmpty(path))
+                            {
                                 teInfo.IsContentInTrackerEvent = false;
                                 teInfo.PathToContent = path;
                             }
@@ -80,7 +92,7 @@ namespace FilesMonitoring {
 
         public bool SendTrackerEvents(Socket socket, ref bool isConnected) {
             List<TrackerEventInfo> teInfos;
-            bool isNeedSendAgain = false;
+            bool isNeedSendAgain = true;
             lock(objLock) {
                 teInfos = TrackerEventInfo
                     .Include(te => te.TrackerEvent)
@@ -178,18 +190,14 @@ namespace FilesMonitoring {
         }
 
         private void GetContentFromFile(FileInfo fi, TrackerEvent item) {
-            var buffer = new byte[(int)fi.Length];
-            var fs = fi.Open(FileMode.Open);
-            int readed;
+            using(var fsRead = fi.OpenRead())
+            {
+                var buffer = new byte[fsRead.Length];
+                int readed;
 
-            readed = fs.Read(buffer, 0, buffer.Length);
-            item.Content = buffer;
-
-            if(fs.Position < fs.Length) {
-                throw new Exception();
+                readed = fsRead.Read(buffer, 0, buffer.Length);
+                item.Content = buffer;
             }
-
-            fs.Close();
         }
         private static string ArchivetedFile(string name, string fullName) {
             if(!File.Exists(fullName)) return null;

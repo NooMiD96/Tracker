@@ -222,7 +222,7 @@ namespace FilesMonitoringServer
                 str = sb.ToString();
 
             } while(str.Substring(str.Length - 3) != "END");
-            str = str.Replace("END", "");
+            str = str.Substring(0, str.Length - 3);
             sb.Clear();
 
             SendMessage(socket, "OK");

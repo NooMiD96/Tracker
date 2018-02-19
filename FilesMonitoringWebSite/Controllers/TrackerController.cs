@@ -189,8 +189,7 @@ namespace FilesMonitoringWebSite.Controllers
                 return JsonConvert.SerializeObject(result, JsonSettings);
             }
         }
-
-        [HttpGet("[Action]")]
+        [HttpGet("[action]")]
         public IActionResult GetFile(long changeId)
         {
             var toSend = (

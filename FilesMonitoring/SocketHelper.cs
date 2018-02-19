@@ -9,6 +9,7 @@ namespace FilesMonitoring {
     public class SocketHelper {
         private static object lockObj = new object();
 
+        //private static string EndOfTransitision = "☻♥♦♣♦☺";
         public static string GetMessageFromServer(byte[] buffer, StringBuilder sb, Socket socket) {
             lock(lockObj) {
                 int size;
@@ -22,7 +23,7 @@ namespace FilesMonitoring {
                     str = sb.ToString();
 
                 } while(str.Substring(str.Length - 3) != "END");
-                str = str.Replace("END", "");
+                str = str.Substring(0, str.Length - 3);
                 sb.Clear();
 
                 return str;

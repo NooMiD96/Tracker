@@ -11,7 +11,7 @@ using System;
 namespace FilesMonitoringWebSite.Migrations
 {
     [DbContext(typeof(IdentityDb))]
-    [Migration("20180122125407_IdentityFirstMigration")]
+    [Migration("20180219100758_IdentityFirstMigration")]
     partial class IdentityFirstMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
