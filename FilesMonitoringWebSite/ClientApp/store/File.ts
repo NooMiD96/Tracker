@@ -202,6 +202,7 @@ export const reducer: Reducer<FileState> = (state: FileState, action: KnownActio
                 ...state,
                 trackerId: action.trackerId,
                 fileListPage: 1,
+                needGetData: true,
             }
 
         case 'SAVE_USER_NAME_ACTION':
@@ -209,6 +210,7 @@ export const reducer: Reducer<FileState> = (state: FileState, action: KnownActio
                 ...state,
                 userName: action.userName,
                 fileListPage: 1,
+                needGetData: true,                
             }
 
         case 'SAVE_FILE_FILTER_ACTION':

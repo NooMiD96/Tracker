@@ -15,7 +15,9 @@ interface IDispatchProps {
     ResetTrackerList: typeof Tracker.actionCreators.ResetTrackerList,
     ResetFileList: typeof File.actionCreators.ResetFileList,
     SaveFileFilter: typeof File.actionCreators.SaveFileFilter,
-    GetFileList: typeof File.actionCreators.GetFileList,
+    SaveTrackerId: typeof File.actionCreators.SaveTrackerId,
+    SaveUserName: typeof File.actionCreators.SaveUserName,
+    ResetUserName: typeof File.actionCreators.ResetUserName,
     ResetChangeList: typeof Change.actionCreators.ResetChangeList,
     ResetFileFilter: typeof File.actionCreators.ResetFileFilter,
 }
@@ -46,8 +48,9 @@ class UserChanges extends React.Component<UserProps, {}> {
         const someState ={
             user: user as User.UserState,
             funcs : {
-                GetSomeList: props.GetFileList,
-                ResetSomeList: props.ResetFileList
+                SaveTrackerId: props.SaveTrackerId,
+                SaveUserName: props.SaveUserName,
+                ResetUserName: props.ResetUserName,
             } as IDispatchPropsTrackerList
         }
 
@@ -72,7 +75,9 @@ const mapDispatchToProps = {
     ResetFileList: File.actionCreators.ResetFileList,
     SaveFileFilter: File.actionCreators.SaveFileFilter,
     ResetFileFilter: File.actionCreators.ResetFileFilter,
-    GetFileList: File.actionCreators.GetFileList,
+    SaveTrackerId: File.actionCreators.SaveTrackerId,
+    SaveUserName: File.actionCreators.SaveUserName,
+    ResetUserName: File.actionCreators.ResetUserName,
     ResetChangeList: Change.actionCreators.ResetChangeList,
 }
 

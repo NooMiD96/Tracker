@@ -12,8 +12,9 @@ import AccessTrigerModal from '../modals/AccessTrigerModal';
 import EditUserModal from '../modals/EditUserModal';
 
 export interface IDispatchProps {
-    GetSomeList: (trackerId: number | string, userName?: string) => void,
-    ResetSomeList: () => void,
+    SaveTrackerId: (trackerId: number) => void,
+    SaveUserName: (userName: string) => void,
+    ResetUserName: () => void,
 }
 
 export type TrackerListProps =
@@ -31,19 +32,7 @@ export class TrackerListRender extends React.Component<TrackerListProps, {}> {
     componentDidUpdate(prevProps: TrackerListProps) {
         let props = this.props;
         if (props.needGetData) {
-            if (props.user.isAdministrating) {
-                props.GetTrackerList(props.trackerListCountView, props.trackerListPage);
-            } else {
-                props.GetTrackerList(props.trackerListCountView, props.trackerListPage);
-            }
-        }
-        if (prevProps.user.isAdministrating != props.user.isAdministrating) {
-            props.funcs.ResetSomeList();
-            if (props.user.isAdministrating) {
-                props.GetTrackerList(props.trackerListCountView, props.trackerListPage);
-            } else {
-                props.GetTrackerList(props.trackerListCountView, props.trackerListPage);
-            }
+            props.GetTrackerList(props.trackerListCountView, props.trackerListPage);
         }
     }
 
@@ -98,52 +87,53 @@ export class TrackerListRender extends React.Component<TrackerListProps, {}> {
                 <th key={1}></th>,
             ]
             templ = props.trackerList.map((item, index) => {
-                return <tr key={index} onClick={() => props.funcs.GetSomeList(item.TrackerId, item.UserName)} className="clickable-tr">
-                    <td>
-                        {item.TrackerId}
-                    </td>
-                    <td>
-                        {item.UserName}
-                    </td>
-                    <td key={index}>
-                        {
-                            item.UserName
-                                ? <AccessTrigerModalButton IsCanAuthohorization={item.IsCanAuthohorization}
-                                    onClickHandler={() => this.ButtonClick(item, 'AccessTrigerModal')}
-                                />
-                                : null
-                        }
-                        {
-                            item.IsCanAuthohorization
-                                ? <EditUserModalButton onClickHandler={() => this.ButtonClick(item, 'EditUserModal')}/>
-                                : null
-                        }
-                    </td>
-                </tr>
-            });
-        } else {
-            let uniqueList: Tracker.Tracker[] = [];
-            uniqueList.push(props.trackerList[0]);
-            if (props.trackerList != null) {
-                for (var i = 1; i < props.trackerList.length; i++) {
-                    var j = 0;
-                    for (; j < uniqueList.length; j++) {
-                        if (props.trackerList[i].TrackerId == uniqueList[j].TrackerId) break;
+            return <tr key={index} onClick={() => {props.funcs.SaveTrackerId(item.TrackerId); 
+                    props.funcs.SaveUserName(item.UserName || '')}} className="clickable-tr">
+                <td>
+                    {item.TrackerId}
+                </td>
+                <td>
+                    {item.UserName}
+                </td>
+                <td key={index}>
+                    {
+                        item.UserName
+                            ? <AccessTrigerModalButton IsCanAuthohorization={item.IsCanAuthohorization}
+                                onClickHandler={() => this.ButtonClick(item, 'AccessTrigerModal')}
+                            />
+                            : null
                     }
-                    if (j == uniqueList.length) {
-                        uniqueList.push(props.trackerList[i]);
+                    {
+                        item.IsCanAuthohorization
+                            ? <EditUserModalButton onClickHandler={() => this.ButtonClick(item, 'EditUserModal')}/>
+                            : null
                     }
+                </td>
+            </tr>
+        });
+    } else {
+        let uniqueList: Tracker.Tracker[] = [];
+        uniqueList.push(props.trackerList[0]);
+        if (props.trackerList != null) {
+            for (var i = 1; i < props.trackerList.length; i++) {
+                var j = 0;
+                for (; j < uniqueList.length; j++) {
+                    if (props.trackerList[i].TrackerId == uniqueList[j].TrackerId) break;
+                }
+                if (j == uniqueList.length) {
+                    uniqueList.push(props.trackerList[i]);
                 }
             }
-
-            templ = uniqueList.map((item, index) => {
-                return <tr key={index} onClick={() => props.funcs.GetSomeList(item.TrackerId)} className="clickable-tr">
-                    <td>
-                        {item.TrackerId}
-                    </td>
-                </tr>
-            });
         }
+
+        templ = uniqueList.map((item, index) => {
+            return <tr key={index} onClick={() => props.funcs.SaveTrackerId(item.TrackerId)} className="clickable-tr">
+                <td>
+                    {item.TrackerId}
+                </td>
+            </tr>
+        });
+    }
 
         return <div className='col-md-12'>
             <table className="tracker-table"><tbody>

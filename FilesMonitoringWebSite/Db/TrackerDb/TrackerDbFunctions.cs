@@ -169,5 +169,8 @@ namespace FilesMonitoringWebSite.Db.TrackerDb
         .Take(count)
         .ToList();
 
+        public Users GetUserOrNull(string un) => Users
+            .FirstOrDefault(us => us.UserName.Equals(un));
+
     }
 }

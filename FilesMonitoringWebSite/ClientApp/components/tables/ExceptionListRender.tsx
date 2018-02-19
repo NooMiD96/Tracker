@@ -16,6 +16,7 @@ export class ExceptionListRender extends React.Component<ExceptionListProps, {}>
     componentDidUpdate(prevProps: ExceptionListProps) {
         let props = this.props;
         if(props.needGetData) {
+            debugger;
             props.GetExceptionList(props.trackerId, props.userName, props.exceptionListCountView, props.exceptionListPage);
         }
     }

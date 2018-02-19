@@ -23,11 +23,13 @@ export type FileListProps =
     & {user: UserState};
 
 export class FileListRender extends React.Component<FileListProps, {}> {
+    modalContainer: HTMLDivElement;
+    
     componentDidMount(){
-        this.modalContainer = document.getElementById('modal-container') as HTMLDivElement;
-
         if(this.props.user.userType == "User"){
             this.props.GetFileList();
+        } else {
+            this.modalContainer = document.getElementById('modal-container') as HTMLDivElement;
         }
     }
     componentDidUpdate(prevProps: FileListProps) {
@@ -37,8 +39,6 @@ export class FileListRender extends React.Component<FileListProps, {}> {
             props.GetFileList(props.trackerId, props.userName, props.fileFilter, props.fileListCountView, props.fileListPage);
         }
     }
-
-    modalContainer: HTMLDivElement;
 
     ButtonClick(item: any):void {
         var tmp = React.createElement(EditDeleteTimeModal, { FileId:item.FileId, isNeedDelete:item.IsNeedDelete, key:item.FileId,

@@ -10,7 +10,9 @@ import ExceptionListRender, { ExceptionListProps } from '../components/tables/Ex
 
 interface IDispatchProps {
     ResetTrackerList: typeof Tracker.actionCreators.ResetTrackerList,
-    GetExceptionList: typeof Exceptions.actionCreators.GetExceptionList,
+    SaveTrackerId: typeof Exceptions.actionCreators.SaveTrackerId,
+    SaveUserName: typeof Exceptions.actionCreators.SaveUserName,
+    ResetUserName: typeof Exceptions.actionCreators.ResetUserName,
     ResetExceptionList: typeof Exceptions.actionCreators.ResetExceptionList,
 }
 
@@ -38,8 +40,9 @@ class UserExceptions extends React.Component<UserExceptionsProps, {}> {
         const someState = {
             user: user as User.UserState,
             funcs: {
-                GetSomeList: props.GetExceptionList,
-                ResetSomeList: props.ResetExceptionList,
+                SaveTrackerId: props.SaveTrackerId,
+                SaveUserName: props.SaveUserName,
+                ResetUserName: props.ResetUserName,
             } as IDispatchPropsTrackerList
         }
 
@@ -58,7 +61,9 @@ function mapStateToProps(state: ApplicationState) {
 }
 const mapDispatchToProps = {
     ResetTrackerList: Tracker.actionCreators.ResetTrackerList,
-    GetExceptionList: Exceptions.actionCreators.GetExceptionList,
+    SaveTrackerId: Exceptions.actionCreators.SaveTrackerId,
+    SaveUserName: Exceptions.actionCreators.SaveUserName,
+    ResetUserName: Exceptions.actionCreators.ResetUserName,
     ResetExceptionList: Exceptions.actionCreators.ResetExceptionList,
 }
 

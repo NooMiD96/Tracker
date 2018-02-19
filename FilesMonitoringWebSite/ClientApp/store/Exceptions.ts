@@ -47,13 +47,16 @@ interface SaveUserNameAction {
     type: 'SAVE_USER_NAME_ACTION',
     userName: string,
 }
+interface ResetUserNameAction {
+    type: 'RESET_USER_NAME_ACTION',
+}
 interface DeleteUserNameAction {
     type: 'DELETE_USER_NAME_ACTION',
 }
 // Declare a 'discriminated union' type. This guarantees that all references to 'type' properties contain one of the
 // declared type strings (and not any other arbitrary string).
 type KnownAction = GetExceptionsAction | SetExceptionsAction | MovePageExceptionListAction | ResetExceptionListAction | MovePageExceptionListAction | ViewCountExceptionListAction
-    | SaveTrackerIdAction | SaveUserNameAction | DeleteUserNameAction;
+    | SaveTrackerIdAction | SaveUserNameAction | ResetUserNameAction | DeleteUserNameAction;
 
 // ----------------
 // ACTION CREATORS - These are functions exposed to UI components that will trigger a state transition.
@@ -91,6 +94,9 @@ export const actionCreators = {
     },
     MovePageExceptionList: (prevOrNext: number) => <MovePageExceptionListAction>{ type: 'MOVE_PAGE_EXCEPTION_LIST_ACTION', prevOrNext: prevOrNext },
     ResetExceptionList: () => <ResetExceptionListAction>{ type: 'RESET_EXCEPTION_LIST_ACTION' },
+    SaveTrackerId: (trackerId: number) => <SaveTrackerIdAction>{ type: 'SAVE_TRACKER_ID_ACTION', trackerId: trackerId },
+    SaveUserName: (userName: string) => <SaveUserNameAction>{ type: 'SAVE_USER_NAME_ACTION', userName: userName },
+    ResetUserName:() => <ResetUserNameAction>{ type: 'RESET_USER_NAME_ACTION' },
     ViewCountExceptionList: (count: number) => <ViewCountExceptionListAction>{ type: 'VIEW_COUNT_EXCEPTION_LIST_ACTION', count: count },
     DeleteUserName: () => <DeleteUserNameAction>{ type: 'DELETE_USER_NAME_ACTION' },
 };
@@ -173,7 +179,13 @@ export const reducer: Reducer<ExceptionState> = (state: ExceptionState, action: 
                 userName: action.userName,
                 exceptionListPage: 1,
             }
-
+        case 'RESET_USER_NAME_ACTION':
+            return {
+                ...state, 
+                userName: undefined,
+                exceptionListPage: 1,
+                needGetData: true,
+            }
         case 'DELETE_USER_NAME_ACTION':
             return {
                 ...state,

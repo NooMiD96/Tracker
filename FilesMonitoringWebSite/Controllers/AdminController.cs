@@ -45,9 +45,8 @@ namespace FilesMonitoringWebSite.Controllers {
             string password = result["password"]?.Value<string>();
 
             var userIdentity = await _userManager.FindByNameAsync(un);
-            var user = _context
-                .Users
-                .FirstOrDefault(us => us.UserName.Equals(un));
+            var user = _context.GetUserOrNull(un);
+                
 
             if(user == null) {
                 return false;
@@ -66,41 +65,6 @@ namespace FilesMonitoringWebSite.Controllers {
             _context.SaveChanges();
 
             return true;
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="count"></param>
-        /// <param name="page"></param>
-        /// <returns></returns>
-        [HttpGet("[action]")]
-        public string GetTrackerList(int? count, int? page) {
-            if(!User.Identity.IsAuthenticated && !User.IsInRole("Admin")) {
-                return "null";
-            }
-            int cnt, pg;
-            if(!count.HasValue || !page.HasValue) {
-                cnt = 10;
-                pg = 1;
-            } else {
-                cnt = count.Value;
-                pg = page.Value;
-            }
-
-            List<Users> result;
-
-            result = _context
-                .Users
-                .OrderBy(us => us.TrackerId)
-                .Skip(cnt * (pg - 1))
-                .Take(cnt)
-                .ToList();
-
-            if(result.Count == 0) {
-                return "null";
-            } else {
-                return JsonConvert.SerializeObject(result, JsonSettings);
-            }
         }
         /// <summary>
         /// 
