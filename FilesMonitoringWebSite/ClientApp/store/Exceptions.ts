@@ -171,6 +171,7 @@ export const reducer: Reducer<ExceptionState> = (state: ExceptionState, action: 
                 ...state,
                 trackerId: action.trackerId,
                 exceptionListPage: 1,
+                needGetData: true,
             }
 
         case 'SAVE_USER_NAME_ACTION':
@@ -178,6 +179,7 @@ export const reducer: Reducer<ExceptionState> = (state: ExceptionState, action: 
                 ...state,
                 userName: action.userName,
                 exceptionListPage: 1,
+                needGetData: true,
             }
         case 'RESET_USER_NAME_ACTION':
             return {

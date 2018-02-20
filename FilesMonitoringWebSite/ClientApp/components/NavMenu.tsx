@@ -20,14 +20,8 @@ export class NavMenu extends React.Component<UserProps, {}> {
     </ul>
 
     ToLogout = (userName: string | undefined, userType: string) => <ul className='nav navbar-nav navbar-right'>
-        <li><span className="label label-default">{userName}</span></li>
+        <li><p className='p-userName'>{userName}</p></li>
         <li>
-            {
-                userType == "Admin" &&
-                    <button type="button" className="btn btn-default btn-lg" onClick={this.props.AdminTrigger}>
-                        Administrating
-                    </button>
-            }
             <button type="button" className="btn btn-default btn-lg" onClick={this.props.SignOut}>
                 Logout
             </button>

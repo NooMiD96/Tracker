@@ -1,18 +1,11 @@
-/**  
-  *  For logining
-  */
 .modal-content{
     color: black;
 }
-.modalInputUserName, .modalInputPassword, .modalInputTrackerId, .search-input{
+.modalInputUserName, .modalInputPassword, .modalInputTrackerId{
     display: block;
     font-weight: normal;
     padding: 5px;
     margin: 5px 5px 5px 0px;
-}
-.search-input{
-    margin-right: 15px;
-    margin-left: 15px;
 }
 .modalInputUserName::placeholder, .modalInputPassword::placeholder, .modalInputTrackerId::placeholder{
     color: #bdbdbd;
@@ -27,19 +20,34 @@
     display: inline-block !important;
 }
 
+.p-userName{
+    display: inline;
+    padding: .2em .6em .3em;
+    font-size: 2em;
+    font-weight: bold;
+    color: #fff;
+    white-space: nowrap;
+    /* margin: 0 10px 0 0; */
+}
+
 .row {
-    /* margin: 10px 0px 10px 0px; */
-    /* margin-right: 0px; 
-    margin-left: 0px; */
     margin-top: 5px;
     margin-bottom: 5px;
 }
 
-
+.search-input{
+    height: 45px;
+    font-size: 18px;
+}
+.input-addon-clickable{
+    cursor: pointer;
+}
+.btn-bound-trigger{
+    margin: 0px 5px 5px 0px;
+}
 
 table {
     border-collapse: collapse;
-    /* width: 100%; */
     border: #ddd 1px solid;
 }
 

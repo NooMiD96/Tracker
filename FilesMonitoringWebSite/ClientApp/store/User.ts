@@ -6,7 +6,7 @@ import { AppThunkAction } from './';
 export interface UserState {
     userType?: string,
     userName?: string,
-    isAdministrating: boolean,
+    isBondUserName: boolean,
 }
 // -----------------
 // ACTIONS - These are serializable (hence replayable) descriptions of state transitions.
@@ -21,12 +21,12 @@ interface GetUserInfoAction {
 interface SignOutAction {
     type: 'SIGN_OUT',
 }
-interface AdminTrigger {
-    type: 'ADMIN_TRIGGER',
+interface BoundTrigger {
+    type: 'BOUND_TRIGGER',
 }
 // Declare a 'discriminated union' type. This guarantees that all references to 'type' properties contain one of the
 // declared type strings (and not any other arbitrary string).
-type KnownAction = GetUserInfoAction | SignOutAction | AdminTrigger;
+type KnownAction = GetUserInfoAction | SignOutAction | BoundTrigger;
 
 // ----------------
 // ACTION CREATORS - These are functions exposed to UI components that will trigger a state transition.
@@ -59,12 +59,12 @@ export const actionCreators = {
         });
         addTask(fetchTask);
     },
-    AdminTrigger: () => <AdminTrigger>{ type: 'ADMIN_TRIGGER' },
+    BoundTrigger: () => <BoundTrigger>{ type: 'BOUND_TRIGGER' },
 };
 
 // ----------------
 // REDUCER - For a given state and action, returns the new state. To support time travel, this must not mutate the old state.
-const unloadedState: UserState = { userName: undefined, userType: undefined, isAdministrating: false };
+const unloadedState: UserState = { userName: undefined, userType: undefined, isBondUserName: false };
 
 export const reducer: Reducer<UserState> = (state: UserState, action: KnownAction) => {
     switch (action.type) {
@@ -75,14 +75,14 @@ export const reducer: Reducer<UserState> = (state: UserState, action: KnownActio
             return {
                 userName: action.userName,
                 userType: action.userType,   
-                isAdministrating: false,
+                isBondUserName: false,
             };
 
-        case 'ADMIN_TRIGGER':
+        case 'BOUND_TRIGGER':
             return {
                 userName: state.userName,
                 userType: state.userType,   
-                isAdministrating: !state.isAdministrating,
+                isBondUserName: !state.isBondUserName,
             }
 
         default:

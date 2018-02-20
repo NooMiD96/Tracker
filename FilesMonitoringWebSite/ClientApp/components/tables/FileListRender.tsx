@@ -10,6 +10,7 @@ import ViewCounter from './components/ViewCounter';
 import { FormateTime } from '../../func/TimeFormater'
 import EditDeleteTimeModalButton from '../buttons/EditDeleteTimeModalButton';
 import EditDeleteTimeModal from '../modals/EditDeleteTimeModal';
+import FilterInfo from '../FilterInfo';
 
 interface IDispatchProps {
     GetChangeList: typeof Change.actionCreators.GetChangeList,
@@ -87,14 +88,13 @@ export class FileListRender extends React.Component<FileListProps, {}> {
 
         return <div className='col-md-12'>
             {
-                props.userName 
-                    ? <div style={{margin: '10px 0px 10px 0px'}}>
-                        <p style={{display: 'inline-block', marginRight: '10px'}}>{props.userName}</p>
-                        <button type="button" className={"btn btn-default"} 
-                            onClick={props.ResetUserName}><span className="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                        </button>
-                    </div>
-                    : null
+                props.userName != null && 
+                    <FilterInfo printText={`Show only ${props.userName}`} onClickAction={props.ResetUserName} />
+            }
+            {
+                props.fileFilter != null && 
+                    <FilterInfo printText="Show only filtred files" onClickAction={props.ResetFileFilter} />
+                    
             }
             <table><tbody>
                 <tr>
@@ -106,12 +106,6 @@ export class FileListRender extends React.Component<FileListProps, {}> {
                     {templ}
                 <tr><td colSpan={4}>
                     <Paginator currentPage={props.fileListPage} CountView={props.fileListCountView} movePageAction={this.props.MovePageFileList}/>
-                    {
-                        props.fileFilter != null &&
-                            <button type="button" className={"btn btn-default right"} 
-                                onClick={props.ResetFileFilter}><span className="glyphicon glyphicon-refresh" aria-hidden="true"></span>
-                            </button>
-                    }
                     <ViewCounter ViewCounterAction={props.ViewCountFileList} ViewNow={this.props.fileListCountView} />
                 </td></tr>
             </tbody></table>

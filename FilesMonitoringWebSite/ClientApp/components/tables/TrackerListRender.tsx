@@ -14,7 +14,7 @@ import EditUserModal from '../modals/EditUserModal';
 export interface IDispatchProps {
     SaveTrackerId: (trackerId: number) => void,
     SaveUserName: (userName: string) => void,
-    ResetUserName: () => void,
+    BoundTrigger: () => void,
 }
 
 export type TrackerListProps =
@@ -80,7 +80,7 @@ export class TrackerListRender extends React.Component<TrackerListProps, {}> {
         let colSpanCount = 1;
         let templ;
         let header;
-        if (props.user.isAdministrating) {
+        if (props.user.isBondUserName) {
             colSpanCount += 2;
             header = [
                 <th key={0}>UserName</th>,

@@ -16,7 +16,6 @@ export class ExceptionListRender extends React.Component<ExceptionListProps, {}>
     componentDidUpdate(prevProps: ExceptionListProps) {
         let props = this.props;
         if(props.needGetData) {
-            debugger;
             props.GetExceptionList(props.trackerId, props.userName, props.exceptionListCountView, props.exceptionListPage);
         }
     }
@@ -41,14 +40,13 @@ export class ExceptionListRender extends React.Component<ExceptionListProps, {}>
 
         return <div className='col-md-12'>
             {
-                props.userName 
-                    ? <div style={{margin: '10px 0px 10px 0px'}}>
-                        <p style={{display: 'inline-block', marginRight: '10px'}}>{props.userName}</p>
+                props.userName != null &&
+                    <div style={{margin: '10px 0px 10px 0px'}}>
+                        <p style={{display: 'inline-block', marginRight: '10px'}}>Show only {props.userName}</p>
                         <button type="button" className={"btn btn-default"} 
                             onClick={props.DeleteUserName}><span className="glyphicon glyphicon-remove" aria-hidden="true"></span>
                         </button>
                     </div>
-                    : null
             }
             <table><tbody>
                 <tr>

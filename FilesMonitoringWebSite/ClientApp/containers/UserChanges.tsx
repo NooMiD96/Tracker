@@ -9,17 +9,19 @@ import { ApplicationState } from '../store';
 import TrackerListRender, { TrackerListProps, IDispatchProps as IDispatchPropsTrackerList } from '../components/tables/TrackerListRender';
 import FileListRender, { FileListProps } from '../components/tables/FileListRender';
 import ChangeListRender, { ChangeListProps } from '../components/tables/ChangeListRender';
-import SearchField from '../components/tables/SearchField';
+import BoundTriggerButton from '../components/buttons/BoundTriggerButton';
+import SearchField from '../components/SearchField';
 
 interface IDispatchProps {
     ResetTrackerList: typeof Tracker.actionCreators.ResetTrackerList,
+    ResetChangeList: typeof Change.actionCreators.ResetChangeList,
     ResetFileList: typeof File.actionCreators.ResetFileList,
     SaveFileFilter: typeof File.actionCreators.SaveFileFilter,
     SaveTrackerId: typeof File.actionCreators.SaveTrackerId,
     SaveUserName: typeof File.actionCreators.SaveUserName,
     ResetUserName: typeof File.actionCreators.ResetUserName,
-    ResetChangeList: typeof Change.actionCreators.ResetChangeList,
     ResetFileFilter: typeof File.actionCreators.ResetFileFilter,
+    BoundTrigger: typeof User.actionCreators.BoundTrigger,
 }
 
 type UserProps =
@@ -40,7 +42,7 @@ class UserChanges extends React.Component<UserProps, {}> {
     public render() {
         let props = this.props;
         let user = {
-            isAdministrating: props.isAdministrating,
+            isBondUserName: props.isBondUserName,
             userType: props.userType,
             userName: props.userName,
         } as User.UserState;
@@ -51,17 +53,18 @@ class UserChanges extends React.Component<UserProps, {}> {
                 SaveTrackerId: props.SaveTrackerId,
                 SaveUserName: props.SaveUserName,
                 ResetUserName: props.ResetUserName,
+                BoundTrigger: props.BoundTrigger,
             } as IDispatchPropsTrackerList
         }
 
-        return this.props.userType != null
-            ? <div className="row">
+        return this.props.userType != null &&
+            <div className="row">
                 <SearchField SaveFilter={props.SaveFileFilter} ResetFilter={props.ResetFileFilter} ResetChangeList={props.ResetChangeList}/>
+                <BoundTriggerButton BoundTrigger={props.BoundTrigger} userType={props.userType} isBoundUserName={props.isBondUserName} />
                 {React.createElement(TrackerListRender, someState as TrackerListProps)}
                 {React.createElement(FileListRender, { user: user } as FileListProps)}
                 {React.createElement(ChangeListRender, { user: user } as ChangeListProps)}
             </div>
-            : null
     }
 }
 
@@ -72,13 +75,14 @@ function mapStateToProps(state: ApplicationState) {
 }
 const mapDispatchToProps = {
     ResetTrackerList: Tracker.actionCreators.ResetTrackerList,
+    ResetChangeList: Change.actionCreators.ResetChangeList,
     ResetFileList: File.actionCreators.ResetFileList,
     SaveFileFilter: File.actionCreators.SaveFileFilter,
-    ResetFileFilter: File.actionCreators.ResetFileFilter,
     SaveTrackerId: File.actionCreators.SaveTrackerId,
     SaveUserName: File.actionCreators.SaveUserName,
     ResetUserName: File.actionCreators.ResetUserName,
-    ResetChangeList: Change.actionCreators.ResetChangeList,
+    ResetFileFilter: File.actionCreators.ResetFileFilter,
+    BoundTrigger: User.actionCreators.BoundTrigger,
 }
 
 export default connect(

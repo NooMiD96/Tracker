@@ -81,20 +81,18 @@ export const actionCreators = {
         let fetchTask = functions.fetchTask('GetFileList', 'GET', params)
             .then(data => {
                 if(data == null){
-
-                }else{
-
-                data = data as File[];
-                if(data){
-                    data.forEach((item:File) => {
-                        if(item.RemoveFromDbTime){
-                            item.RemoveFromDbTime = new Date(item.RemoveFromDbTime);
-                        }
-                    });
+                    dispatch({ type: 'SET_FILE_LIST', fileList: null });
+                } else {
+                    data = data as File[];
+                    if(data){
+                        data.forEach((item:File) => {
+                            if(item.RemoveFromDbTime){
+                                item.RemoveFromDbTime = new Date(item.RemoveFromDbTime);
+                            }
+                        });
+                    }
+                    dispatch({ type: 'SET_FILE_LIST', fileList: data });
                 }
-                dispatch({ type: 'SET_FILE_LIST', fileList: data });
-                }
-                
             }).catch(err => {
                 console.log('Error :-S in change list', err);
             });

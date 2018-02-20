@@ -14,6 +14,7 @@ interface IDispatchProps {
     SaveUserName: typeof Exceptions.actionCreators.SaveUserName,
     ResetUserName: typeof Exceptions.actionCreators.ResetUserName,
     ResetExceptionList: typeof Exceptions.actionCreators.ResetExceptionList,
+    BoundTrigger: typeof User.actionCreators.BoundTrigger,
 }
 
 type UserExceptionsProps =
@@ -32,7 +33,7 @@ class UserExceptions extends React.Component<UserExceptionsProps, {}> {
     public render() {
         const props = this.props;
         const user = {
-            isAdministrating: props.isAdministrating,
+            isBondUserName: props.isBondUserName,
             userType: props.userType,
             userName: props.userName,
         } as User.UserState;
@@ -43,6 +44,7 @@ class UserExceptions extends React.Component<UserExceptionsProps, {}> {
                 SaveTrackerId: props.SaveTrackerId,
                 SaveUserName: props.SaveUserName,
                 ResetUserName: props.ResetUserName,
+                BoundTrigger: props.BoundTrigger,
             } as IDispatchPropsTrackerList
         }
 
@@ -65,6 +67,7 @@ const mapDispatchToProps = {
     SaveUserName: Exceptions.actionCreators.SaveUserName,
     ResetUserName: Exceptions.actionCreators.ResetUserName,
     ResetExceptionList: Exceptions.actionCreators.ResetExceptionList,
+    BoundTrigger: User.actionCreators.BoundTrigger,
 }
 
 export default connect(
