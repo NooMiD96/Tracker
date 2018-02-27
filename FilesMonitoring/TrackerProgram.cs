@@ -30,14 +30,18 @@ using Microsoft.Extensions.Configuration;
 /// </summary>
 namespace FilesMonitoring {
     public class TrackerProgram {
-        static private FileSystemWatcher[] _watchers;
+        static private FileSystemWatcher[,] _watchers;
         static private bool _isEventsRecord = false;
+        static private bool _isEventsDirRecord = false;
         static private Timer _timer = new Timer();
+        static private Timer _timerDir = new Timer();
         static private int _timerInterval = 500;
+        static private int _timerDirInterval = 500;
 
         static private System.Threading.EventWaitHandle ewh = new System.Threading.EventWaitHandle(false, System.Threading.EventResetMode.ManualReset);
 
         static ConcurrentQueue<TrackerEvent> eventList = new ConcurrentQueue<TrackerEvent>();
+        static ConcurrentQueue<TrackerEvent> dirEventList = new ConcurrentQueue<TrackerEvent>();
         static private Analizer analizer = new Analizer(eventList);
 
         static private int _trackerId;
@@ -62,14 +66,14 @@ namespace FilesMonitoring {
             ParseConfig();
 
             Analizer.ignores = _ignores;
-            Analizer.extensions = _extensions;
 
             TryConnectSQLite();
-            TryCreateWatcher(_path);
+            TryCreateWatcher(_path, _extensions);
 
             Task.Factory.StartNew(DbListener);
 
             SetEventRecordTimer();
+            SetEventDirRecordTimer();
 
             Console.WriteLine("Input text for exit");
             Console.ReadLine();
@@ -93,14 +97,16 @@ namespace FilesMonitoring {
             }
             //directories
             _path = configuration["Dirs:value"].Split(';');
-            //extensions and ignores
+            //extensions 
             var extensions = configuration["Extensions:value"];
-            if(string.IsNullOrEmpty(extensions)) {
-                _ignores = configuration["Ignores:value"].Split(';');
-            } else {
+            if(!string.IsNullOrEmpty(extensions))
                 _extensions = extensions.Split(';');
-            }
-
+            else
+                _extensions = new string[] { "*.*" };
+            //ignores
+            var ignores = configuration["Ignores:value"];
+            if(!string.IsNullOrEmpty(ignores))
+                _ignores = ignores.Split(';');
             //trackerId(if exist)
             var trackerId = configuration["TrackerId:value"];
             if(string.IsNullOrEmpty(trackerId)) {
@@ -121,34 +127,63 @@ namespace FilesMonitoring {
             Config.Save("app.config");
         }
 
-        private void TryCreateWatcher(string[] paths) {
-            _watchers = new FileSystemWatcher[paths.Length];
+        private void TryCreateWatcher(string[] paths, string[] extensions) {
+            _watchers = new FileSystemWatcher[paths.Length, extensions.Length + 1];
+
+            var notify = NotifyFilters.FileName | NotifyFilters.LastWrite;
+            var onChange = new FileSystemEventHandler(OnChanged);
+            var onRename = new RenamedEventHandler(OnRenamed);
+            var onError = new ErrorEventHandler(OnError);
+
+            var onChangeDir = new FileSystemEventHandler(OnChangedDir);
+            var onRenameDir = new RenamedEventHandler(OnRenamedDir);
+            var onErrorDir = new ErrorEventHandler(OnErrorDir);
+
+            FileSystemWatcher watcher;
+
             for(int i = 0; i < paths.Length; i++) {
-                var watcher = new FileSystemWatcher();
-                watcher.Path = paths[i];
-                watcher.Filter = "*.*";
+                for(int j = 0; j < _extensions.Length; j++)
+                {
+                    watcher = new FileSystemWatcher
+                    {
+                        Path = paths[i],
+                        Filter = _extensions[j],
+                        NotifyFilter = notify,
+                        IncludeSubdirectories = true,
+                        EnableRaisingEvents = true,
+                    };
 
-                watcher.NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.DirectoryName |
-                    NotifyFilters.FileName | NotifyFilters.LastAccess | NotifyFilters.LastWrite;
+                    watcher.Changed += onChange;
+                    watcher.Created += onChange;
+                    watcher.Deleted += onChange;
+                    watcher.Renamed += onRename;
+                    watcher.Error += onError;
 
-                watcher.IncludeSubdirectories = true;
+                    _watchers[i, j] = watcher;
+                }
+                watcher = new FileSystemWatcher
+                {
+                    Path = paths[i],
+                    Filter = "*.*",
+                    NotifyFilter = NotifyFilters.DirectoryName,
+                    IncludeSubdirectories = true,
+                    EnableRaisingEvents = true,
+                };
 
-                watcher.Changed += new FileSystemEventHandler(OnChanged);
-                watcher.Created += new FileSystemEventHandler(OnChanged);
-                watcher.Deleted += new FileSystemEventHandler(OnChanged);
-                watcher.Renamed += new RenamedEventHandler(OnRenamed);
-                watcher.Error += new ErrorEventHandler(OnError);
+                watcher.Changed += onChangeDir;
+                watcher.Created += onChangeDir;
+                watcher.Deleted += onChangeDir;
+                watcher.Renamed += onRenameDir;
+                watcher.Error += onErrorDir;
 
-                watcher.EnableRaisingEvents = true;
-
-                _watchers[i] = watcher;
+                _watchers[i, extensions.Length] = watcher;
             }
         }
         private void TryConnectSQLite() {
             SQLiteDb.ConnectingString = connectionString;
             _context = new SQLiteDb();
             _context.Database.Migrate();
-            //_context.RemoveAll();
+            _context.RemoveAll();
         }
         private bool TryConnectSocket() {
             try {
@@ -188,7 +223,7 @@ namespace FilesMonitoring {
 
             while(true) {
                 ewh.WaitOne();
-                System.Threading.Thread.Sleep(1000);
+                System.Threading.Thread.Sleep(1500);
                 if(_isEventsRecord) {
                     ewh.Reset();
                     continue;
@@ -212,19 +247,35 @@ namespace FilesMonitoring {
             _timer.Elapsed += new ElapsedEventHandler(SendChangeToServer);
             _timer.Interval = 1000;
         }
+        private void SetEventDirRecordTimer()
+        {
+            _timerDir.Elapsed += new ElapsedEventHandler(SendDirChangeToServer);
+            _timerDir.Interval = 1000;
+        }
         private void TimerReset() {
             _timer.Stop();
             _timer.Interval = _timerInterval;
             _isEventsRecord = false;
+        }
+        private void TimerDirReset()
+        {
+            _timerDir.Stop();
+            _timerDir.Interval = _timerDirInterval;
+            _isEventsDirRecord = false;
         }
         private void StartOrContinueRecord() {
             if(!_isEventsRecord) {
                 _isEventsRecord = true;
                 _timer.Start();
             }
-            //} else {
-            //_timer.Interval += 10;
-            //}
+        }
+        private void StartOrContinueRecordDir()
+        {
+            if(!_isEventsDirRecord)
+            {
+                _isEventsDirRecord = true;
+                _timerDir.Start();
+            }
         }
 
         private void OnError(object sender, ErrorEventArgs e) {
@@ -269,6 +320,105 @@ namespace FilesMonitoring {
             }
         }
 
+        private void OnErrorDir(object sender, ErrorEventArgs e)
+        {
+            _context.AddException(e.GetException());
+        }
+        private void OnRenamedDir(object sender, RenamedEventArgs e)
+        {
+            Console.WriteLine($"Was renamed dir {e.OldName} to {e.Name}");
+
+            dirEventList.Enqueue(new TrackerEvent(e.Name, e.OldName, e.FullPath, e.OldFullPath, TrackerEvents.RenamedDir));
+
+            StartOrContinueRecordDir();
+        }
+        private void OnChangedDir(object sender, FileSystemEventArgs e)
+        {
+            switch(e.ChangeType.ToString())
+            {
+                case nameof(TrackerEvents.Created):
+                    Console.WriteLine($"Was create dir with name - {e.FullPath}");
+
+                    dirEventList.Enqueue(new TrackerEvent(e.Name, e.FullPath, TrackerEvents.CreatedDir));
+
+                    StartOrContinueRecordDir();
+                    break;
+
+                case nameof(TrackerEvents.Changed):
+                    Console.WriteLine($"Was changed dir with name - {e.FullPath}");
+                    break;
+
+                case nameof(TrackerEvents.Deleted):
+                    Console.WriteLine($"Was deleted dir with name - {e.FullPath}");
+
+                    dirEventList.Enqueue(new TrackerEvent(e.Name, e.FullPath, TrackerEvents.DeletedDir));
+
+                    StartOrContinueRecordDir();
+                    break;
+
+                default:
+                    throw new Exception($"{e.ChangeType} not supported");
+            }
+        }
+
+        private void AddAllFilesInDir(string path)
+        {
+            var list = new List<TrackerEvent>();
+
+            foreach(var item in Directory.GetFiles(path))
+            {
+                list.Add(new TrackerEvent()
+                {
+                    FullName = item,
+                    DateTime = DateTime.Now,
+                    Name = item.Substring(item.LastIndexOf('\\') + 1),
+                    EventName = TrackerEvents.Created
+                });
+            }
+
+            _context.AddEvents(list);
+
+            foreach(var item in Directory.GetDirectories(path))
+            {
+                AddAllFilesInDir(item);
+            }
+        }
+        private void AnalizeDir()
+        {
+            var list = new List<TrackerEvent>();
+            TrackerEvent trackerEvent;
+            while(dirEventList.Count != 0)
+            {
+                dirEventList.TryDequeue(out trackerEvent);
+                list.Add(trackerEvent);
+            }
+            var result = analizer.AnalizeDir(list);
+            if(result == null)
+                return;
+
+            foreach(var item in result)
+            {
+                if(item.EventName == TrackerEvents.CreatedDir)
+                {
+                    AddAllFilesInDir(item.FullName);
+                } else
+                {
+                    _context.AddDirEvent(item);
+                }
+            }
+        }
+        private void SendDirChangeToServer(object sender, ElapsedEventArgs e)
+        {
+            TimerDirReset();
+
+            while(eventList.Count != 0)
+                System.Threading.Thread.Sleep(5000);
+
+            AnalizeDir();
+
+            //say can send to server
+            ewh.Set();
+        }
         private void SendChangeToServer(object sender, ElapsedEventArgs e) {
             TimerReset();
 

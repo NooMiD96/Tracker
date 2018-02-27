@@ -55,5 +55,9 @@ namespace FilesMonitoring {
         Deleted,
         Renamed,
         Moved,
+        CreatedDir,
+        DeletedDir,
+        RenamedDir,
+        MovedDir,
     }
 }

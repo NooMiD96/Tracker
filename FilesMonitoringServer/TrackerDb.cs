@@ -34,6 +34,9 @@ namespace FilesMonitoringServer {
                 .HasMany(tr => tr.FileList)
                 .WithOne(fl => fl.Tracker)
                 .HasForeignKey(fl => fl.TrackerId);
+            modelBuilder.Entity<Change>()
+                .Property(ch => ch.EventName)
+                .HasColumnType("TrackerEvents");
             //modelBuilder.Entity<File>()
             //    .Property(f => f.IsWasDeletedChange)
             //    .HasDefaultValue(false);
@@ -127,7 +130,12 @@ namespace FilesMonitoringServer {
                     };
                     newFile = true;
                 }
-
+                if(evnt.EventName == TrackerEvents.Created)
+                {
+                    file.IsWasDeletedChange = false;
+                    file.IsNeedDelete = false;
+                    file.RemoveFromDbTime = null;
+                }
                 if(evnt.EventName == TrackerEvents.Deleted) {
                     file.IsWasDeletedChange = true;
                     file.RemoveFromDbTime = DateTime.Now.AddDays(14);
@@ -187,6 +195,104 @@ namespace FilesMonitoringServer {
 
             AddChange(evnt, change, path, trackerId);
         }
+
+        public void DeleteDir(TrackerEvent evnt, int trackerId)
+        {
+            var files = (
+                    from t in Trackers
+                    join f in Files on t.TrackerId equals f.TrackerId
+                    where t.TrackerId.Equals(trackerId)
+                    select f
+                ).ToList();
+
+            lock(lockObj)
+            {
+                files.ForEach(file => {
+                    file.ChangeList.Add(new Change()
+                    {
+                        UserId = GetUserId(evnt, trackerId),
+                        EventName = TrackerEvents.Deleted,
+                        DateTime = evnt.DateTime,
+                    });
+                    file.IsWasDeletedChange = true;
+                    file.IsNeedDelete = true;
+                    file.RemoveFromDbTime = DateTime.Now.AddDays(14);
+                });
+                SaveChanges();
+            }
+        }
+        public void RenameDir(TrackerEvent evnt, int trackerId)
+        {
+            var files = (
+                    from t in Trackers
+                    join f in Files on t.TrackerId equals f.TrackerId
+                    where t.TrackerId.Equals(trackerId) && f.FullName.Equals(evnt.OldFullName)
+                    select f
+                ).ToList();
+
+            lock(lockObj)
+            {
+                files.ForEach(file => {
+                    file.ChangeList.Add(new Change()
+                    {
+                        UserId = GetUserId(evnt, trackerId),
+                        EventName = TrackerEvents.Moved,
+                        DateTime = evnt.DateTime,
+                    });
+                    file.FullName = evnt.FullName;
+                });
+                SaveChanges();
+            }
+        }
+        public void MoveDir(TrackerEvent evnt, int trackerId)
+        {
+            var files = (
+                    from t in Trackers
+                    join f in Files on t.TrackerId equals f.TrackerId
+                    where t.TrackerId.Equals(trackerId) && f.FullName.Equals(evnt.OldFullName)
+                    select f
+                ).ToList();
+
+            lock(lockObj)
+            {
+                files.ForEach(file => {
+                    file.ChangeList.Add(new Change()
+                    {
+                        UserId = GetUserId(evnt, trackerId),
+                        EventName = TrackerEvents.Moved,
+                        DateTime = evnt.DateTime,
+                    });
+                    file.FullName = evnt.FullName;
+                });
+                SaveChanges();
+            }
+        }
+        public void CreateDir(TrackerEvent evnt, int trackerId)
+        {
+            var files = (
+                    from t in Trackers
+                    join f in Files on t.TrackerId equals f.TrackerId
+                    where t.TrackerId.Equals(trackerId) && f.FullName.Equals(evnt.FullName)
+                    select f
+                ).ToList();
+
+            lock(lockObj)
+            {
+                files.ForEach(file => {
+                    file.ChangeList.Add(new Change()
+                    {
+                        UserId = GetUserId(evnt, trackerId),
+                        EventName = TrackerEvents.Created,
+                        DateTime = evnt.DateTime,
+                    });
+                    file.IsWasDeletedChange = false;
+                    file.IsNeedDelete = false;
+                    file.RemoveFromDbTime = null;
+                });
+                SaveChanges();
+            }
+        }
+
         public void CreatedEvent(TrackerEvent evnt, string path, int trackerId) {
             var userId = GetUserId(evnt, trackerId);
 
@@ -292,7 +398,6 @@ namespace FilesMonitoringServer {
             where !String.IsNullOrEmpty(co.FilePath)
             select co
             ).ToList();
-
 
         private int GetUserId(TrackerEvent evnt, int trackerId) {
             var user = (

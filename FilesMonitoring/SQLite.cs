@@ -233,6 +233,20 @@ namespace FilesMonitoring {
                 SaveChanges();
             }
         }
+
+        public void AddDirEvent(TrackerEvent trackerEvent)
+        {
+            TrackerEventInfo dirEvent = new TrackerEventInfo()
+            {
+                IsContentInTrackerEvent = true,
+                TrackerEvent = trackerEvent,
+            };
+            lock(objLock)
+            {
+                TrackerEventInfo.Add(dirEvent);
+                SaveChanges();
+            }
+        }
     }
 
     public class TrackerEventInfo {

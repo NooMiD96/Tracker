@@ -130,49 +130,77 @@ namespace FilesMonitoringServer
                         switch(evnt.EventName)
                         {
                             case TrackerEvents.Moved:
-                            _context.MovedEvent(evnt, trackerId);
+                                _context.MovedEvent(evnt, trackerId);
 
-                            Console.WriteLine($"Move {evnt.Name}\nfrom {evnt.OldFullName}\ninto {evnt.FullName}");
-                            break;
+                                Console.WriteLine($"Move {evnt.Name}\nfrom {evnt.OldFullName}\ninto {evnt.FullName}");
+                                break;
 
                             case TrackerEvents.Renamed:
-                            _context.RenamedEvent(evnt, trackerId);
+                                _context.RenamedEvent(evnt, trackerId);
 
-                            Console.WriteLine($"Rename {evnt.OldName} into {evnt.Name}");
-                            break;
+                                Console.WriteLine($"Rename {evnt.OldName} into {evnt.Name}");
+                                break;
 
                             case TrackerEvents.Created:
-                            if(evnt.Content == null)
-                            {
-                                Console.WriteLine($"Content null");
-                                path = GetContent(evnt, socket, trackerId);
-                            }
+                                if(evnt.Content == null)
+                                {
+                                    Console.WriteLine($"Content null");
+                                    path = GetContent(evnt, socket, trackerId);
+                                }
 
-                            _context.CreatedEvent(evnt, path, trackerId);
+                                _context.CreatedEvent(evnt, path, trackerId);
 
-                            Console.WriteLine($"Create file {evnt.FullName}");
-                            break;
+                                Console.WriteLine($"Create file {evnt.FullName}");
+                                break;
 
                             case TrackerEvents.Deleted:
-                            _context.DeletedEvent(evnt, trackerId);
+                                _context.DeletedEvent(evnt, trackerId);
 
-                            Console.WriteLine($"Delete file {evnt.FullName}");
-                            break;
+                                Console.WriteLine($"Delete file {evnt.FullName}");
+                                break;
 
                             case TrackerEvents.Changed:
-                            if(evnt.Content == null)
-                            {
-                                Console.WriteLine($"Content null");
-                                path = GetContent(evnt, socket, trackerId);
-                            }
+                                if(evnt.Content == null)
+                                {
+                                    Console.WriteLine($"Content null");
+                                    path = GetContent(evnt, socket, trackerId);
+                                }
 
-                            _context.ChangedEvent(evnt, path, trackerId);
+                                _context.ChangedEvent(evnt, path, trackerId);
 
-                            Console.WriteLine($"Change file {evnt.FullName}");
-                            break;
+                                Console.WriteLine($"Change file {evnt.FullName}");
+                                break;
+
+                            case TrackerEvents.DeletedDir:
+                                Console.WriteLine($"Delete dir {evnt.FullName}");
+
+                                _context.DeleteDir(evnt, trackerId);
+
+                                break;
+
+                            case TrackerEvents.CreatedDir:
+                                Console.WriteLine($"Create dir {evnt.FullName}");
+
+                                //_context.CreateDir(evnt, trackerId);
+
+                                break;
+
+                            case TrackerEvents.RenamedDir:
+                                Console.WriteLine($"Rename dir {evnt.OldName} into {evnt.Name}");
+
+                                _context.RenameDir(evnt, trackerId);
+
+                                break;
+
+                            case TrackerEvents.MovedDir:
+                                Console.WriteLine($"Move dir {evnt.Name}\nfrom {evnt.OldFullName}\ninto {evnt.FullName}");
+
+                                _context.MoveDir(evnt, trackerId);
+
+                                break;
 
                             default:
-                            break;
+                                break;
                         }
                     }
                 } catch(Exception ex)

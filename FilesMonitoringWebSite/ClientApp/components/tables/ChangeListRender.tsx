@@ -29,6 +29,7 @@ export class ChangeListRender extends React.Component<ChangeListProps, {}> {
         }
         
         var templ = this.props.changeList.map((item, index)=>{
+            debugger;
             return <tr key={index}>
                 <td>
                     {FormateTime(item.DateTime)}
@@ -38,7 +39,7 @@ export class ChangeListRender extends React.Component<ChangeListProps, {}> {
                 </td>
                 <td>
                     {
-                        item.EventName == Change.ChangeEvents.Changed || item.EventName == Change.ChangeEvents.Created &&
+                        (item.EventName == Change.ChangeEvents.Changed || item.EventName == Change.ChangeEvents.Created) &&
                             <a className="clickable-link" onClick={() => Helper.functions.DownloadFile(item.Id.toString())}>Download</a>
                     }
                 </td>
