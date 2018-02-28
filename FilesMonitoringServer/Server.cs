@@ -54,6 +54,19 @@ namespace FilesMonitoringServer
             } 
         }
 
+        private void ParseXml()
+        {
+            XmlDocument Config = new XmlDocument();
+            Config.Load("Settings.xml");
+            XmlElement xRoot = Config.DocumentElement;
+            //db
+            TrackerDb.ConnectingString = xRoot["ConnectionString"].InnerXml;
+            //server
+            var xServer = xRoot["Server"];
+            _ip = xServer["ServerIP"].InnerText;
+            _port = Convert.ToInt32(xServer["ServerPort"].InnerText);
+        }
+
         private void DbCleaner()
         {
             while(true)
@@ -77,19 +90,6 @@ namespace FilesMonitoringServer
 
                 Thread.Sleep(86400000);
             }
-        }
-
-        private void ParseXml()
-        {
-            XmlDocument Config = new XmlDocument();
-            Config.Load("Settings.xml");
-            XmlElement xRoot = Config.DocumentElement;
-            //db
-            TrackerDb.ConnectingString = xRoot["ConnectionString"].InnerXml;
-            //server
-            var xServer = xRoot["Server"];
-            _ip = xServer["ServerIP"].InnerText;
-            _port = Convert.ToInt32(xServer["ServerPort"].InnerText);
         }
 
         public static void ListenConnection(Object obj)
@@ -217,48 +217,6 @@ namespace FilesMonitoringServer
 
         }
 
-        private static void SendFileToWebClient(Socket socket)
-        {
-            NetworkStream stream = new NetworkStream(socket, true);
-            int packSize = 25000000;
-            byte[] buffer = new byte[packSize];
-            stream.Read(buffer, 0, packSize);
-            string path = Encoding.ASCII.GetString(buffer);
-            path = Directory.GetCurrentDirectory() + path.Replace("\0", "");
-            FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read);
-            int size;
-            while(fileStream.Length > fileStream.Position)
-            {
-                size = fileStream.Read(buffer, 0, packSize);
-                stream.Write(buffer, 0, size);
-            }
-            stream.Close();
-        }
-
-        private static string GetMessageFromClient(byte[] buffer, StringBuilder sb, Socket socket)
-        {
-            int size;
-            string str;
-
-            do
-            {
-                do
-                {
-                    size = socket.Receive(buffer);
-                    sb.Append(Encoding.ASCII.GetString(buffer, 0, size));
-                } while(socket.Available > 0);
-                str = sb.ToString();
-
-            } while(str.Substring(str.Length - 3) != "END");
-            str = str.Substring(0, str.Length - 3);
-            sb.Clear();
-
-            SendMessage(socket, "OK");
-
-            return str;
-        }
-        private static void SendMessage(Socket socket, string message) => socket.Send(Encoding.ASCII.GetBytes(message + "END"));
-
         private static int Connected(Socket socket)
         {
             SendMessage(socket, "GET_INFO");
@@ -375,6 +333,48 @@ namespace FilesMonitoringServer
             } //!using ms
 
             return path;
+        }
+        private static string GetMessageFromClient(byte[] buffer, StringBuilder sb, Socket socket)
+        {
+            int size;
+            string str;
+
+            do
+            {
+                do
+                {
+                    size = socket.Receive(buffer);
+                    sb.Append(Encoding.ASCII.GetString(buffer, 0, size));
+                } while(socket.Available > 0);
+                str = sb.ToString();
+
+            } while(str.Substring(str.Length - 3) != "END");
+            str = str.Substring(0, str.Length - 3);
+            sb.Clear();
+
+            SendMessage(socket, "OK");
+
+            return str;
+        }
+
+        private static void SendMessage(Socket socket, string message) => socket.Send(Encoding.ASCII.GetBytes(message + "END"));
+
+        private static void SendFileToWebClient(Socket socket)
+        {
+            NetworkStream stream = new NetworkStream(socket, true);
+            int packSize = 25000000;
+            byte[] buffer = new byte[packSize];
+            stream.Read(buffer, 0, packSize);
+            string path = Encoding.ASCII.GetString(buffer);
+            path = Directory.GetCurrentDirectory() + path.Replace("\0", "");
+            FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read);
+            int size;
+            while(fileStream.Length > fileStream.Position)
+            {
+                size = fileStream.Read(buffer, 0, packSize);
+                stream.Write(buffer, 0, size);
+            }
+            stream.Close();
         }
     }
 }

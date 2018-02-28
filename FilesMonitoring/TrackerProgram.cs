@@ -18,6 +18,7 @@ using System.Xml.Linq;
 using System.Configuration;
 using System.Collections.Specialized;
 using Microsoft.Extensions.Configuration;
+using System.Text.RegularExpressions;
 
 /// <summary>
 /// TODO:
@@ -62,6 +63,9 @@ namespace FilesMonitoring {
         static private string[] _extensions;
         static private string[] _ignores;
 
+        static private Regex _regexExtensions;
+        static private Regex _regexIgnores;
+
         public TrackerProgram(string[] args) {
             ParseConfig();
 
@@ -74,6 +78,8 @@ namespace FilesMonitoring {
 
             SetEventRecordTimer();
             SetEventDirRecordTimer();
+
+            InitRegexs();
 
             Console.WriteLine("Input text for exit");
             Console.ReadLine();
@@ -183,7 +189,7 @@ namespace FilesMonitoring {
             SQLiteDb.ConnectingString = connectionString;
             _context = new SQLiteDb();
             _context.Database.Migrate();
-            _context.RemoveAll();
+            //_context.RemoveAll();
         }
         private bool TryConnectSocket() {
             try {
@@ -213,6 +219,30 @@ namespace FilesMonitoring {
                 return true;
             } catch {
                 return false;
+            }
+        }
+
+        private void InitRegexs()
+        {
+            if(_extensions != null || _extensions.Length == 0)
+            {
+                string extensions = "";
+                foreach(var item in _extensions)
+                {
+                    extensions += $"({item.Replace(".", "\\.").Replace("*", "(\\w)*")})+|";
+                }
+                extensions = extensions.Remove(extensions.Length - 1);
+                _regexExtensions = new Regex(extensions);
+            }
+            if(_ignores != null || _ignores.Length == 0)
+            {
+                string ignores = "";
+                foreach(var item in _ignores)
+                {
+                    ignores += $"({item.Replace("*", "\\.").Replace("*", "(\\w)*")})+|";
+                }
+                ignores = ignores.Remove(ignores.Length - 1);
+                _regexIgnores = new Regex(ignores);
             }
         }
 
@@ -366,30 +396,26 @@ namespace FilesMonitoring {
             var list = new List<TrackerEvent>();
 
             foreach(var item in Directory.GetFiles(path))
-            {
-                list.Add(new TrackerEvent()
-                {
-                    FullName = item,
-                    DateTime = DateTime.Now,
-                    Name = item.Substring(item.LastIndexOf('\\') + 1),
-                    EventName = TrackerEvents.Created
-                });
-            }
+                if(_regexExtensions.IsMatch(item) && !_regexIgnores.IsMatch(item))
+                    list.Add(new TrackerEvent()
+                    {
+                        FullName = item,
+                        DateTime = DateTime.Now,
+                        Name = item.Substring(item.LastIndexOf('\\') + 1),
+                        EventName = TrackerEvents.Created
+                    });
 
             _context.AddEvents(list);
 
             foreach(var item in Directory.GetDirectories(path))
-            {
                 AddAllFilesInDir(item);
-            }
         }
         private void AnalizeDir()
         {
             var list = new List<TrackerEvent>();
-            TrackerEvent trackerEvent;
             while(dirEventList.Count != 0)
             {
-                dirEventList.TryDequeue(out trackerEvent);
+                dirEventList.TryDequeue(out TrackerEvent trackerEvent);
                 list.Add(trackerEvent);
             }
             var result = analizer.AnalizeDir(list);
@@ -397,16 +423,12 @@ namespace FilesMonitoring {
                 return;
 
             foreach(var item in result)
-            {
                 if(item.EventName == TrackerEvents.CreatedDir)
-                {
                     AddAllFilesInDir(item.FullName);
-                } else
-                {
+                else
                     _context.AddDirEvent(item);
-                }
-            }
         }
+
         private void SendDirChangeToServer(object sender, ElapsedEventArgs e)
         {
             TimerDirReset();

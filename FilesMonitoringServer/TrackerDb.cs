@@ -196,12 +196,64 @@ namespace FilesMonitoringServer {
             AddChange(evnt, change, path, trackerId);
         }
 
+        public void CreatedEvent(TrackerEvent evnt, string path, int trackerId) {
+            var userId = GetUserId(evnt, trackerId);
+
+            Content content = new Content() {
+                Payload = evnt.Content,
+                FilePath = path,
+            };
+
+            var change = new Change() {
+                UserId = userId,
+                EventName = evnt.EventName,
+                DateTime = evnt.DateTime,
+                Content = content,
+            };
+
+            AddChange(evnt, change, path, trackerId);
+        }
+        public void RenamedEvent(TrackerEvent evnt, int trackerId) {
+            var userId = GetUserId(evnt, trackerId);
+            var change = new Change() {
+                EventName = evnt.EventName,
+                DateTime = evnt.DateTime,
+                OldName = evnt.OldName,
+                OldFullName = evnt.OldFullName,
+                UserId = userId,
+            };
+
+            AddChange(evnt, change, null, trackerId);
+        }
+        public void MovedEvent(TrackerEvent evnt, int trackerId) {
+            var userId = GetUserId(evnt, trackerId);
+            var change = new Change() {
+                EventName = evnt.EventName,
+                DateTime = evnt.DateTime,
+                OldName = evnt.OldName,
+                OldFullName = evnt.OldFullName,
+                UserId = userId,
+            };
+
+            AddChange(evnt, change, null, trackerId);
+        }
+        public void DeletedEvent(TrackerEvent evnt, int trackerId) {
+            var userId = GetUserId(evnt, trackerId);
+            var change = new Change() {
+                EventName = evnt.EventName,
+                DateTime = evnt.DateTime,
+                UserId = userId,
+            };
+
+            AddChange(evnt, change, null, trackerId);
+        }
+
         public void DeleteDir(TrackerEvent evnt, int trackerId)
         {
             var files = (
                     from t in Trackers
                     join f in Files on t.TrackerId equals f.TrackerId
-                    where t.TrackerId.Equals(trackerId)
+                    where t.TrackerId.Equals(trackerId) && f.FullName.IndexOf(evnt.FullName) == 0
                     select f
                 ).ToList();
 
@@ -293,110 +345,17 @@ namespace FilesMonitoringServer {
             }
         }
 
-        public void CreatedEvent(TrackerEvent evnt, string path, int trackerId) {
-            var userId = GetUserId(evnt, trackerId);
-
-            Content content = new Content() {
-                Payload = evnt.Content,
-                FilePath = path,
-            };
-
-            var change = new Change() {
-                UserId = userId,
-                EventName = evnt.EventName,
-                DateTime = evnt.DateTime,
-                Content = content,
-            };
-
-            AddChange(evnt, change, path, trackerId);
-        }
-
-        private void UnDeleteAllFilesInDirectory(TrackerEvent evnt, int trackerId) {
-            var files = Files
-                .Where(fl => fl.FullName.IndexOf(evnt.FullName) != -1)
-                .ToList();
-            lock(lockObj) {
-                files.ForEach(file => {
-                    file.ChangeList.Add(new Change() {
-                        UserId = GetUserId(evnt, trackerId),
-                        EventName = evnt.EventName,
-                        DateTime = evnt.DateTime,
-                    });
-                    file.IsWasDeletedChange = false;
-                    file.IsNeedDelete = false;
-                    file.RemoveFromDbTime = null;
-                });
-                SaveChanges();
-            }
-        }
-        private void DeleteAllFilesInDirectory(TrackerEvent evnt, int trackerId)
-        {
-            var files = Files
-                .Where(fl => fl.FullName.IndexOf(evnt.FullName) != -1)
-                .ToList();
-            lock(lockObj)
-            {
-                files.ForEach(file => {
-                    file.ChangeList.Add(new Change()
-                    {
-                        UserId = GetUserId(evnt, trackerId),
-                        EventName = evnt.EventName,
-                        DateTime = evnt.DateTime,
-                    });
-                    file.IsWasDeletedChange = true;
-                    file.IsNeedDelete = true;
-                    file.RemoveFromDbTime = DateTime.Now.AddDays(14);
-                });
-                SaveChanges();
-            }
-        }
-
-        public void RenamedEvent(TrackerEvent evnt, int trackerId) {
-            var userId = GetUserId(evnt, trackerId);
-            var change = new Change() {
-                EventName = evnt.EventName,
-                DateTime = evnt.DateTime,
-                OldName = evnt.OldName,
-                OldFullName = evnt.OldFullName,
-                UserId = userId,
-            };
-
-            AddChange(evnt, change, null, trackerId);
-        }
-        public void MovedEvent(TrackerEvent evnt, int trackerId) {
-            var userId = GetUserId(evnt, trackerId);
-            var change = new Change() {
-                EventName = evnt.EventName,
-                DateTime = evnt.DateTime,
-                OldName = evnt.OldName,
-                OldFullName = evnt.OldFullName,
-                UserId = userId,
-            };
-
-            AddChange(evnt, change, null, trackerId);
-        }
-        public void DeletedEvent(TrackerEvent evnt, int trackerId) {
-            var userId = GetUserId(evnt, trackerId);
-            var change = new Change() {
-                EventName = evnt.EventName,
-                DateTime = evnt.DateTime,
-                UserId = userId,
-            };
-
-            AddChange(evnt, change, null, trackerId);
-        }
-
         public IQueryable<File> GetFilesToDelete(DateTime now) => (
             from f in Files
             where f.IsNeedDelete.Equals(true) && f.RemoveFromDbTime.HasValue && DateTime.Compare(f.RemoveFromDbTime.Value, now) < 0
             select f);
 
         public List<Content> GetContentsToDelete(IQueryable<File> files) => (
-            from f in files
-            join ch in Changes on f.FileId equals ch.FileId
-            join co in Contents on ch.ContentId equals co.ContentId
-            where !String.IsNullOrEmpty(co.FilePath)
-            select co
+                from f in files
+                join ch in Changes on f.FileId equals ch.FileId
+                join co in Contents on ch.ContentId equals co.ContentId
+                where !String.IsNullOrEmpty(co.FilePath)
+                select co
             ).ToList();
 
         private int GetUserId(TrackerEvent evnt, int trackerId) {

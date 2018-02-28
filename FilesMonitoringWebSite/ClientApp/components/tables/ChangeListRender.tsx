@@ -29,7 +29,6 @@ export class ChangeListRender extends React.Component<ChangeListProps, {}> {
         }
         
         var templ = this.props.changeList.map((item, index)=>{
-            debugger;
             return <tr key={index}>
                 <td>
                     {FormateTime(item.DateTime)}
