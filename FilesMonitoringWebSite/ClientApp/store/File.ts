@@ -59,6 +59,10 @@ interface SaveFileFilterAction {
 interface ResetFileListAction {
     type: 'RESET_FILE_LIST_ACTION',
 }
+interface ResetTrackerIdAction {
+    type: 'RESET_TRACKER_ID_ACTION',
+    trackerId: number,
+}
 interface ResetUserNameAction {
     type: 'RESET_USER_NAME_ACTION',
 }
@@ -69,7 +73,7 @@ interface ResetFileFilterAction {
 // declared type strings (and not any other arbitrary string).
 
 type KnownAction = GetFileListAction | SetFileListAction | MovePageFileListAction | ViewCountFileListAction | EditDeleteTimeAction
-    | SaveTrackerIdAction | SaveUserNameAction | SaveFileFilterAction | ResetFileListAction | ResetUserNameAction | ResetFileFilterAction;
+    | SaveTrackerIdAction | SaveUserNameAction | SaveFileFilterAction | ResetFileListAction | ResetTrackerIdAction | ResetUserNameAction | ResetFileFilterAction;
 
 // ----------------
 // ACTION CREATORS - These are functions exposed to UI components that will trigger a state transition.
@@ -87,7 +91,7 @@ export const actionCreators = {
                     if(data){
                         data.forEach((item:File) => {
                             if(item.RemoveFromDbTime){
-                                item.RemoveFromDbTime = new Date(item.RemoveFromDbTime);
+                                item.RemoveFromDbTime = new Date(item.RemoveFromDbTime + "Z");
                             }
                         });
                     }
@@ -120,6 +124,7 @@ export const actionCreators = {
     ResetFileList: () => <ResetFileListAction>{ type: 'RESET_FILE_LIST_ACTION' },
     ViewCountFileList: (count: number) => <ViewCountFileListAction>{ type: 'VIEW_COUNT_FILE_LIST_ACTION', count: count },
     SaveTrackerId: (trackerId: number) => <SaveTrackerIdAction>{ type: 'SAVE_TRACKER_ID_ACTION', trackerId: trackerId },
+    ResetTrackerId:() => <ResetTrackerIdAction>{ type: 'RESET_TRACKER_ID_ACTION' },
     SaveUserName: (userName: string) => <SaveUserNameAction>{ type: 'SAVE_USER_NAME_ACTION', userName: userName },
     ResetUserName:() => <ResetUserNameAction>{ type: 'RESET_USER_NAME_ACTION' },
     SaveFileFilter:(fileFilter:string) => <SaveFileFilterAction>{ type: 'SAVE_FILE_FILTER_ACTION', fileFilter:fileFilter },
@@ -225,6 +230,14 @@ export const reducer: Reducer<FileState> = (state: FileState, action: KnownActio
                 fileFilter: undefined,
                 fileListPage: 1,
                 needGetData: true,
+            }
+
+        case 'RESET_TRACKER_ID_ACTION':
+            return {
+                ...state,
+                trackerId: undefined,
+                fileList: undefined,
+                userName: undefined
             }
 
         case 'RESET_USER_NAME_ACTION':

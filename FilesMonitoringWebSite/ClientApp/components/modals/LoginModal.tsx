@@ -55,7 +55,10 @@ export default class LoginModal extends React.Component<InputProps, {}> {
                         <p className="incorrectLogin" ref="incorrect_login"></p>
                         <input type="text" className="modalInputUserName" placeholder="Enter your User Name" ref="inputUN" />
                         <p className="validateModalInputUserName" ref="input_un_error"></p>
-                        <input type="password" className="modalInputPassword" placeholder="Enter your Password" ref="inputPW" />
+                        <input type="password" className="modalInputPassword" placeholder="Enter your Password" ref="inputPW" onKeyPress={(ev) => {
+                            if(ev.key == 'Enter')
+                                this.loginhandler()
+                        }} />
                         <p className="validateModalInputPassword" ref="input_pw_error"></p>
                     </div>
                     <div className="modal-footer">

@@ -18,7 +18,7 @@ namespace FilesMonitoring {
         [Required]
         public TrackerEvents EventName { get; set; }
         [Required]
-        public DateTime DateTime { get; set; } = DateTime.Now;
+        public DateTime DateTime { get; set; } = DateTime.UtcNow;
         public byte[] Content { get; set; }
         [Required]
         public string UserName { get; set; } = Environment.UserName;

@@ -75,7 +75,7 @@ export const actionCreators = {
                     data = data as Change[];
                     if(data){
                         data.forEach((item:Change) => {
-                            item.DateTime = new Date(item.DateTime);
+                            item.DateTime = new Date(item.DateTime + "Z");
                         });
                     }
                     dispatch({ type: 'SET_CHANGE_LIST', changeList: data});

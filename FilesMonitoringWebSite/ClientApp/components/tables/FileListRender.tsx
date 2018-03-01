@@ -88,6 +88,10 @@ export class FileListRender extends React.Component<FileListProps, {}> {
 
         return <div className='col-md-12'>
             {
+                props.trackerId != null && 
+                    <FilterInfo printText={`Show only tracker id ${props.trackerId}`} onClickAction={props.ResetTrackerId} />
+            }
+            {
                 props.userName != null && 
                     <FilterInfo printText={`Show only ${props.userName}`} onClickAction={props.ResetUserName} />
             }

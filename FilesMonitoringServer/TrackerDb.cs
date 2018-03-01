@@ -138,7 +138,7 @@ namespace FilesMonitoringServer {
                 }
                 if(evnt.EventName == TrackerEvents.Deleted) {
                     file.IsWasDeletedChange = true;
-                    file.RemoveFromDbTime = DateTime.Now.AddDays(14);
+                    file.RemoveFromDbTime = DateTime.UtcNow.AddDays(14);
                 } 
             }
 
@@ -268,7 +268,7 @@ namespace FilesMonitoringServer {
                     });
                     file.IsWasDeletedChange = true;
                     file.IsNeedDelete = true;
-                    file.RemoveFromDbTime = DateTime.Now.AddDays(14);
+                    file.RemoveFromDbTime = DateTime.UtcNow.AddDays(14);
                 });
                 SaveChanges();
             }
@@ -278,7 +278,7 @@ namespace FilesMonitoringServer {
             var files = (
                     from t in Trackers
                     join f in Files on t.TrackerId equals f.TrackerId
-                    where t.TrackerId.Equals(trackerId) && f.FullName.Equals(evnt.OldFullName)
+                    where t.TrackerId.Equals(trackerId) && f.FullName.IndexOf(evnt.OldFullName) == 0
                     select f
                 ).ToList();
 
@@ -288,10 +288,12 @@ namespace FilesMonitoringServer {
                     file.ChangeList.Add(new Change()
                     {
                         UserId = GetUserId(evnt, trackerId),
-                        EventName = TrackerEvents.Moved,
+                        EventName = TrackerEvents.Renamed,
                         DateTime = evnt.DateTime,
+                        OldName = file.FileName,
+                        OldFullName = file.FullName
                     });
-                    file.FullName = evnt.FullName;
+                    file.FullName = file.FullName.Replace(evnt.OldFullName, evnt.FullName);
                 });
                 SaveChanges();
             }
@@ -324,6 +326,7 @@ namespace FilesMonitoringServer {
             var files = (
                     from t in Trackers
                     join f in Files on t.TrackerId equals f.TrackerId
+                    join c in Changes on f.FileId equals c.FileId
                     where t.TrackerId.Equals(trackerId) && f.FullName.Equals(evnt.FullName)
                     select f
                 ).ToList();

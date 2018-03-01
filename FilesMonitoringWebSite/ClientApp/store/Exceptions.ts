@@ -78,7 +78,7 @@ export const actionCreators = {
                 data = data as Exception[];
                 if (data) {
                     data.forEach((item: Exception) => {
-                        item.DateTime = new Date(item.DateTime);
+                        item.DateTime = new Date(item.DateTime + "Z");
                     });
                 }
                 

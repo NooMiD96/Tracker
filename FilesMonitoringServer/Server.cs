@@ -73,7 +73,7 @@ namespace FilesMonitoringServer
             {
                 try
                 {
-                    var files = _context.GetFilesToDelete(DateTime.Now);
+                    var files = _context.GetFilesToDelete(DateTime.UtcNow);
 
                     var contents = _context.GetContentsToDelete(files);
 

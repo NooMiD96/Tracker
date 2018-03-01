@@ -54,7 +54,6 @@ namespace FilesMonitoring {
                         fi = new FileInfo(item.FullName);
                         if(fi.Length < sizeLimit)
                         {
-                            //TODO: catch exaption
                             try
                             {
                                 GetContentFromFile(fi, item);
@@ -226,7 +225,7 @@ namespace FilesMonitoring {
             lock(objLock) {
                 ClientExceptions
                     .Add(new ClientException() {
-                        DateTime = DateTime.Now,
+                        DateTime = DateTime.UtcNow,
                         UserName = Environment.UserName,
                         ExceptionInner = exception.Message + '\n' + exception.InnerException,
                     });

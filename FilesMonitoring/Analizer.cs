@@ -43,7 +43,6 @@ namespace FilesMonitoring {
                     //means copy or move big file or just create file
                     case TrackerEvents.Created:
                         if(Directory.Exists(evnt.FullName))
-                            //todo: check all files in folder
                             break;
                         Create_Check(evnt, notDefinedEventList, returnList);
 

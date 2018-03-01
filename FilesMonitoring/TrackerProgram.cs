@@ -22,12 +22,17 @@ using System.Text.RegularExpressions;
 
 /// <summary>
 /// TODO:
-///     compressing
-///     start setting 
-///     replace file
-///     scaning when first start
-///     delete file.zip after send
-///     When delete 2 equal folder analizer return MoveEvent !!
+///     for client program:
+///         /compressing
+///         /replace file (01.03.2018 need test)
+///         /scaning when first start ?? (dont needed)
+///         /When delete 2 equal folder analizer return MoveEvent !! (01.03.2018 this can was fixed becouse remade analizer)
+///     
+///     for server:
+///         /
+/// 
+///     for site:
+///         /
 /// </summary>
 namespace FilesMonitoring {
     public class TrackerProgram {
@@ -37,7 +42,7 @@ namespace FilesMonitoring {
         static private Timer _timer = new Timer();
         static private Timer _timerDir = new Timer();
         static private int _timerInterval = 500;
-        static private int _timerDirInterval = 500;
+        static private int _timerDirInterval = 1500;
 
         static private System.Threading.EventWaitHandle ewh = new System.Threading.EventWaitHandle(false, System.Threading.EventResetMode.ManualReset);
 
@@ -84,6 +89,7 @@ namespace FilesMonitoring {
             Console.WriteLine("Input text for exit");
             Console.ReadLine();
         }
+
         private void ParseConfig() {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -400,7 +406,7 @@ namespace FilesMonitoring {
                     list.Add(new TrackerEvent()
                     {
                         FullName = item,
-                        DateTime = DateTime.Now,
+                        DateTime = DateTime.UtcNow,
                         Name = item.Substring(item.LastIndexOf('\\') + 1),
                         EventName = TrackerEvents.Created
                     });
@@ -434,7 +440,7 @@ namespace FilesMonitoring {
             TimerDirReset();
 
             while(eventList.Count != 0)
-                System.Threading.Thread.Sleep(5000);
+                return;
 
             AnalizeDir();
 
